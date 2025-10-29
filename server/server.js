@@ -226,23 +226,19 @@ app.use((err, req, res, next) => {
   })
 })
 
-// Start server
-const startServer = async () => {
-  await connectDB()
-  
+// Initialize database connection
+connectDB().catch(error => {
+  console.error('❌ Database connection failed:', error)
+})
+
+// Start server only in development
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
   const server = app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`)
     console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`)
     console.log(`🌐 Client URL: ${process.env.CLIENT_URL || 'http://localhost:5173'}`)
   })
-  
-  return server
 }
 
-startServer().catch(error => {
-  console.error('❌ Failed to start server:', error)
-  process.exit(1)
-})
-
-// For Vercel, export the app
+// Export for Vercel
 export default app
