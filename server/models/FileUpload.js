@@ -26,6 +26,16 @@ const fileUploadSchema = new mongoose.Schema({
     type: String,
     required: [true, 'File URL is required']
   },
+  isS3: {
+    type: Boolean,
+    default: false
+  },
+  s3Key: {
+    type: String,
+    required: function() {
+      return this.isS3
+    }
+  },
   uploadedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

@@ -231,7 +231,10 @@ const AdminDashboard = () => {
           </div>
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors">
+              <button 
+                onClick={() => navigate('/admin/users')}
+                className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors"
+              >
                 <Users className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                 <p className="text-sm font-medium text-gray-900">Manage Users</p>
                 <p className="text-xs text-gray-500">Add, edit, or remove users</p>

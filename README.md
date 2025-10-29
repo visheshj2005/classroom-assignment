@@ -127,26 +127,54 @@ This starts both frontend (http://localhost:5173) and backend (http://localhost:
 
 ## 🌐 Production Deployment
 
-### Vercel Deployment (Recommended)
+This application is fully configured for production deployment on **Vercel** with **MongoDB Atlas** and **AWS S3** for file storage.
 
-1. **Prepare for Deployment**
-   ```bash
-   npm run build
-   ```
+### Quick Deploy to Vercel
 
-2. **Environment Variables**
-   Set these in Vercel dashboard:
-   ```env
-   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/classroom-assignment
-   JWT_SECRET=your-production-jwt-secret
-   NODE_ENV=production
-   CLIENT_URL=https://your-domain.vercel.app
-   ```
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-username/classroom-assignment-portal)
 
-3. **Deploy**
-   ```bash
-   vercel --prod
-   ```
+### Complete Deployment Guide
+
+For detailed deployment instructions, see **[DEPLOYMENT.md](./DEPLOYMENT.md)** which covers:
+
+- MongoDB Atlas setup
+- AWS S3 configuration  
+- Vercel deployment
+- Environment variables
+- Security considerations
+- Troubleshooting
+
+### Required Environment Variables for Production
+
+```env
+# Database
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/classroom-assignment
+
+# JWT
+JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters
+JWT_EXPIRES_IN=7d
+
+# Server
+NODE_ENV=production
+CLIENT_URL=https://your-vercel-app.vercel.app
+
+# AWS S3 (for file storage)
+AWS_ACCESS_KEY_ID=your-aws-access-key-id
+AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
+AWS_REGION=us-east-1
+AWS_S3_BUCKET=your-s3-bucket-name
+
+# Security
+BCRYPT_ROUNDS=12
+```
+
+### Architecture Overview
+
+- **Frontend**: React app deployed to Vercel's CDN
+- **Backend**: Node.js API deployed as Vercel serverless functions
+- **Database**: MongoDB Atlas (cloud database)
+- **File Storage**: AWS S3 (scalable file storage)
+- **Authentication**: JWT tokens with secure httpOnly cookies
 
 ### Manual Server Deployment
 

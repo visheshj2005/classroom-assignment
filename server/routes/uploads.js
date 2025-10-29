@@ -1,5 +1,4 @@
 import express from 'express'
-import multer from 'multer'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
@@ -8,77 +7,15 @@ import { param } from 'express-validator'
 import { handleValidationErrors } from '../middleware/validation.js'
 import FileUpload from '../models/FileUpload.js'
 import AnalyticsService from '../services/analyticsService.js'
+import { createUpload, getFileUrl, deleteFile, isS3Configured } from '../services/s3Service.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const router = express.Router()
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, '../uploads')
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true })
-}
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const { category = 'general' } = req.body
-    const categoryDir = path.join(uploadsDir, category)
-    
-    if (!fs.existsSync(categoryDir)) {
-      fs.mkdirSync(categoryDir, { recursive: true })
-    }
-    
-    cb(null, categoryDir)
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-    const ext = path.extname(file.originalname)
-    cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`)
-  }
-})
-
-// File filter
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = {
-    'assignment_attachment': ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.png', '.zip'],
-    'submission_file': ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.png', '.zip'],
-    'comment_attachment': ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.png'],
-    'profile_avatar': ['.jpg', '.jpeg', '.png', '.gif']
-  }
-
-  const category = req.body.category || 'general'
-  const ext = path.extname(file.originalname).toLowerCase()
-  
-  if (allowedTypes[category] && !allowedTypes[category].includes(ext)) {
-    return cb(new Error(`File type ${ext} not allowed for ${category}`), false)
-  }
-
-  // Check file size limits
-  const sizeLimits = {
-    'profile_avatar': 2 * 1024 * 1024, // 2MB
-    'assignment_attachment': 50 * 1024 * 1024, // 50MB
-    'submission_file': 50 * 1024 * 1024, // 50MB
-    'comment_attachment': 10 * 1024 * 1024 // 10MB
-  }
-
-  const maxSize = sizeLimits[category] || 10 * 1024 * 1024
-  if (file.size > maxSize) {
-    return cb(new Error(`File size exceeds limit of ${maxSize / 1024 / 1024}MB`), false)
-  }
-
-  cb(null, true)
-}
-
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB max
-    files: 5 // Max 5 files per request
-  }
-})
+// Create upload instance (S3 or local based on configuration)
+const upload = createUpload()
 
 // Upload files
 router.post('/',
@@ -100,17 +37,25 @@ router.post('/',
       const uploadedFiles = []
 
       for (const file of files) {
+        // For S3, use the key; for local, use the path
+        const filePath = isS3Configured() ? file.key : file.path
+        const fileUrl = isS3Configured() ? 
+          await getFileUrl(file.key) : 
+          `/api/uploads/files/${file.filename}`
+
         const fileUpload = new FileUpload({
-          filename: file.filename,
+          filename: file.filename || path.basename(file.key),
           originalName: file.originalname,
           mimetype: file.mimetype,
           size: file.size,
-          path: file.path,
-          url: `/api/uploads/files/${file.filename}`,
+          path: filePath,
+          url: fileUrl,
           uploadedBy: userId,
           entityId: entityId || null,
           entityType: entityType || null,
-          category: category || 'general'
+          category: category || 'general',
+          isS3: isS3Configured(),
+          s3Key: isS3Configured() ? file.key : null
         })
 
         await fileUpload.save()
@@ -133,8 +78,8 @@ router.post('/',
     } catch (error) {
       console.error('Error uploading files:', error)
       
-      // Clean up uploaded files on error
-      if (req.files) {
+      // Clean up uploaded files on error (local storage only)
+      if (req.files && !isS3Configured()) {
         req.files.forEach(file => {
           if (fs.existsSync(file.path)) {
             fs.unlinkSync(file.path)
@@ -168,24 +113,31 @@ router.get('/files/:filename',
         })
       }
 
-      const filePath = fileUpload.path
-      if (!fs.existsSync(filePath)) {
-        return res.status(404).json({
-          success: false,
-          message: 'File not found on disk'
-        })
-      }
-
       // Increment download count
       await fileUpload.incrementDownload()
 
-      // Set appropriate headers
-      res.setHeader('Content-Type', fileUpload.mimetype)
-      res.setHeader('Content-Disposition', `inline; filename="${fileUpload.originalName}"`)
-      
-      // Stream the file
-      const fileStream = fs.createReadStream(filePath)
-      fileStream.pipe(res)
+      if (fileUpload.isS3 && fileUpload.s3Key) {
+        // For S3 files, redirect to signed URL
+        const signedUrl = await getFileUrl(fileUpload.s3Key)
+        res.redirect(signedUrl)
+      } else {
+        // For local files, stream directly
+        const filePath = fileUpload.path
+        if (!fs.existsSync(filePath)) {
+          return res.status(404).json({
+            success: false,
+            message: 'File not found on disk'
+          })
+        }
+
+        // Set appropriate headers
+        res.setHeader('Content-Type', fileUpload.mimetype)
+        res.setHeader('Content-Disposition', `inline; filename="${fileUpload.originalName}"`)
+        
+        // Stream the file
+        const fileStream = fs.createReadStream(filePath)
+        fileStream.pipe(res)
+      }
     } catch (error) {
       console.error('Error serving file:', error)
       res.status(500).json({
@@ -215,23 +167,30 @@ router.get('/download/:filename',
         })
       }
 
-      const filePath = fileUpload.path
-      if (!fs.existsSync(filePath)) {
-        return res.status(404).json({
-          success: false,
-          message: 'File not found on disk'
-        })
-      }
-
       // Increment download count
       await fileUpload.incrementDownload()
 
-      // Force download
-      res.setHeader('Content-Type', 'application/octet-stream')
-      res.setHeader('Content-Disposition', `attachment; filename="${fileUpload.originalName}"`)
-      
-      const fileStream = fs.createReadStream(filePath)
-      fileStream.pipe(res)
+      if (fileUpload.isS3 && fileUpload.s3Key) {
+        // For S3 files, generate signed URL with download disposition
+        const signedUrl = await getFileUrl(fileUpload.s3Key)
+        res.redirect(signedUrl)
+      } else {
+        // For local files, stream with download headers
+        const filePath = fileUpload.path
+        if (!fs.existsSync(filePath)) {
+          return res.status(404).json({
+            success: false,
+            message: 'File not found on disk'
+          })
+        }
+
+        // Force download
+        res.setHeader('Content-Type', 'application/octet-stream')
+        res.setHeader('Content-Disposition', `attachment; filename="${fileUpload.originalName}"`)
+        
+        const fileStream = fs.createReadStream(filePath)
+        fileStream.pipe(res)
+      }
     } catch (error) {
       console.error('Error downloading file:', error)
       res.status(500).json({
@@ -305,8 +264,10 @@ router.delete('/:fileId',
         })
       }
 
-      // Delete file from disk
-      if (fs.existsSync(fileUpload.path)) {
+      // Delete file from storage
+      if (fileUpload.isS3 && fileUpload.s3Key) {
+        await deleteFile(fileUpload.s3Key)
+      } else if (fileUpload.path && fs.existsSync(fileUpload.path)) {
         fs.unlinkSync(fileUpload.path)
       }
 

@@ -174,12 +174,31 @@ app.use('/api/analytics', featureFlag('analytics'), analyticsRoutes)
 app.use('/api/uploads', featureFlag('file_uploads'), uploadRoutes)
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Server is running',
-    timestamp: new Date().toISOString()
-  })
+app.get('/api/health', async (req, res) => {
+  try {
+    // Check database connection
+    const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+    
+    // Check S3 configuration (if enabled)
+    const { isS3Configured } = await import('./services/s3Service.js')
+    const s3Status = isS3Configured() ? 'configured' : 'local-storage'
+    
+    res.json({
+      success: true,
+      message: 'Server is running',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      database: dbStatus,
+      fileStorage: s3Status,
+      version: '1.0.0'
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Health check failed',
+      error: error.message
+    })
+  }
 })
 
 // Serve React app in production
