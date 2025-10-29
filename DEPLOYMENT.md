@@ -86,31 +86,29 @@ This guide will help you deploy the Classroom Assignment Portal to production us
    In Vercel dashboard, go to your project settings and add these environment variables:
 
    ```
-   # Database
-   MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/classroom-assignment
+   # Database (REQUIRED)
+   MONGODB_URI=mongodb+srv://visheshj2005:Visheshjain18@classroom-portal.dl5nzmz.mongodb.net/?appName=classroom-portal
 
-   # JWT
+   # JWT (REQUIRED)
    JWT_SECRET=your-super-secret-jwt-key-change-this-in-production-minimum-32-characters
    JWT_EXPIRES_IN=7d
 
-   # Server Configuration
+   # Server Configuration (REQUIRED)
    NODE_ENV=production
-   CLIENT_URL=https://your-vercel-app.vercel.app
 
-   # AWS S3 Configuration
-   AWS_ACCESS_KEY_ID=your-aws-access-key-id
-   AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
-   AWS_REGION=us-east-1
-   AWS_S3_BUCKET=your-s3-bucket-name
-
-   # Security
+   # Security Settings
    BCRYPT_ROUNDS=12
+   RATE_LIMIT_WINDOW_MS=900000
+   RATE_LIMIT_MAX_REQUESTS=200
+   AUTH_RATE_LIMIT_MAX=10
 
-   # Feature Flags
+   # Feature Flags (Optional)
    ENABLE_ANALYTICS=true
    ENABLE_NOTIFICATIONS=true
    ENABLE_FILE_UPLOADS=true
    ```
+
+   **Note:** AWS S3 configuration is no longer required as the app now uses database storage for files.
 
 3. **Deploy:**
    - Click "Deploy"

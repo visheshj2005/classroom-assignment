@@ -62,8 +62,9 @@ const initialState = {
   error: null
 }
 
-// API base URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+// API base URL - use relative path in production, localhost in development
+const API_BASE_URL = import.meta.env.VITE_API_URL || 
+  (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api')
 
 // Axios instance
 const api = axios.create({

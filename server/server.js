@@ -68,7 +68,7 @@ const authLimiter = rateLimit({
 
 app.use(limiter)
 
-// CORS configuration
+// CORS configuration - more permissive for Vercel
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
@@ -81,7 +81,11 @@ app.use(cors({
     // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true)
     
-    if (allowedOrigins.includes(origin) || origin.includes('vercel.app')) {
+    // Allow all Vercel domains and localhost
+    if (!origin || 
+        allowedOrigins.includes(origin) || 
+        origin.includes('vercel.app') || 
+        origin.includes('localhost')) {
       return callback(null, true)
     }
     
@@ -162,7 +166,12 @@ app.get('/api/health', (req, res) => {
       environment: process.env.NODE_ENV || 'development',
       database: dbStatus,
       fileStorage: 'database',
-      version: '1.0.0'
+      version: '1.0.0',
+      routes: {
+        auth: '/api/auth/login, /api/auth/register',
+        users: '/api/users',
+        classes: '/api/classes'
+      }
     })
   } catch (error) {
     res.status(500).json({
@@ -171,6 +180,18 @@ app.get('/api/health', (req, res) => {
       error: error.message
     })
   }
+})
+
+// Test endpoint for debugging
+app.get('/api/test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'API is working',
+    timestamp: new Date().toISOString(),
+    headers: req.headers,
+    url: req.url,
+    method: req.method
+  })
 })
 
 // Serve React app in production
