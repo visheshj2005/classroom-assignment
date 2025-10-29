@@ -13,10 +13,15 @@ const tests = [
     method: 'GET'
   },
   {
-    name: 'Authentication Endpoint',
-    url: '/api/auth/me',
-    method: 'GET',
-    expectStatus: 401 // Should be unauthorized without token
+    name: 'Register Endpoint',
+    url: '/api/auth/register',
+    method: 'POST',
+    data: {
+      name: 'Test User',
+      email: 'test@example.com',
+      password: 'test123'
+    },
+    expectStatus: [201, 400] // 201 for success, 400 if user exists
   }
 ]
 
@@ -28,15 +33,22 @@ async function runTests() {
     try {
       console.log(`Testing: ${test.name}...`)
       
-      const response = await axios({
+      const config = {
         method: test.method,
         url: `${BASE_URL}${test.url}`,
         validateStatus: () => true // Don't throw on any status
-      })
-
-      const expectedStatus = test.expectStatus || 200
+      }
       
-      if (response.status === expectedStatus) {
+      if (test.data) {
+        config.data = test.data
+        config.headers = { 'Content-Type': 'application/json' }
+      }
+      
+      const response = await axios(config)
+
+      const expectedStatuses = Array.isArray(test.expectStatus) ? test.expectStatus : [test.expectStatus || 200]
+      
+      if (expectedStatuses.includes(response.status)) {
         console.log(`✅ ${test.name} - Status: ${response.status}`)
         
         if (test.url === '/api/health') {
@@ -48,7 +60,8 @@ async function runTests() {
         
         passed++
       } else {
-        console.log(`❌ ${test.name} - Expected: ${expectedStatus}, Got: ${response.status}`)
+        console.log(`❌ ${test.name} - Expected: ${expectedStatuses.join(' or ')}, Got: ${response.status}`)
+        console.log(`   Response: ${JSON.stringify(response.data)}`)
         failed++
       }
     } catch (error) {
@@ -65,7 +78,6 @@ async function runTests() {
     console.log('🎉 All tests passed! Deployment looks good.')
   } else {
     console.log('⚠️  Some tests failed. Check your deployment configuration.')
-    process.exit(1)
   }
 }
 

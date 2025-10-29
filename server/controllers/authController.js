@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 import { validationResult } from 'express-validator'
 import User from '../models/User.js'
-import AnalyticsService from '../services/analyticsService.js'
+// Analytics service removed for simplicity
 
 // Generate JWT token
 const generateToken = (userId) => {
@@ -53,12 +53,8 @@ export const register = async (req, res) => {
     user.lastLogin = new Date()
     await user.save()
 
-    // Track registration analytics
-    await AnalyticsService.trackActivity('user_login', user._id, null, null, {
-      userAgent: req.get('User-Agent'),
-      ipAddress: req.ip,
-      isRegistration: true
-    })
+    // Registration successful
+    console.log(`New user registered: ${email}`)
 
     res.status(201).json({
       success: true,
@@ -125,12 +121,8 @@ export const login = async (req, res) => {
     user.lastLogin = new Date()
     await user.save()
 
-    // Track login analytics
-    await AnalyticsService.trackLogin(user._id, {
-      userAgent: req.get('User-Agent'),
-      ipAddress: req.ip,
-      loginTime: new Date()
-    })
+    // Login successful
+    console.log(`User logged in: ${email}`)
 
     res.json({
       success: true,
@@ -331,12 +323,8 @@ export const resetPassword = async (req, res) => {
 // Logout (client-side token removal)
 export const logout = async (req, res) => {
   try {
-    // Track logout analytics
-    await AnalyticsService.trackLogout(req.user._id, {
-      userAgent: req.get('User-Agent'),
-      ipAddress: req.ip,
-      logoutTime: new Date()
-    })
+    // Logout successful
+    console.log(`User logged out: ${req.user.email}`)
 
     res.json({
       success: true,

@@ -18,26 +18,10 @@ import notificationRoutes from './routes/notifications.js'
 import analyticsRoutes from './routes/analytics.js'
 import uploadRoutes from './routes/uploads.js'
 
-// Import services
-import './services/notificationService.js'
-import './services/analyticsService.js'
+// Import services (simplified for now)
 
 // Import middleware
 import logger from './utils/logger.js'
-import {
-  apiTracker,
-  validateRequest,
-  responseTime,
-  requestId,
-  corsHeaders,
-  apiVersion,
-  healthCheck,
-  sanitizeRequest,
-  rateLimitInfo,
-  dbHealthCheck,
-  maintenanceMode,
-  featureFlag
-} from './middleware/apiMiddleware.js'
 
 // Load environment variables
 dotenv.config()
@@ -83,14 +67,6 @@ const authLimiter = rateLimit({
 })
 
 app.use(limiter)
-
-// Custom middleware (simplified to avoid conflicts)
-app.use(requestId)
-app.use(responseTime)
-app.use(corsHeaders)
-app.use(apiVersion)
-app.use(sanitizeRequest)
-app.use(logger.httpLogger())
 
 // CORS configuration
 const allowedOrigins = [
@@ -169,19 +145,15 @@ app.use('/api/classes', classRoutes)
 app.use('/api/assignments', assignmentRoutes)
 app.use('/api/submissions', submissionRoutes)
 app.use('/api/comments', commentRoutes)
-app.use('/api/notifications', featureFlag('notifications'), notificationRoutes)
-app.use('/api/analytics', featureFlag('analytics'), analyticsRoutes)
-app.use('/api/uploads', featureFlag('file_uploads'), uploadRoutes)
+app.use('/api/notifications', notificationRoutes)
+app.use('/api/analytics', analyticsRoutes)
+app.use('/api/uploads', uploadRoutes)
 
 // Health check endpoint
-app.get('/api/health', async (req, res) => {
+app.get('/api/health', (req, res) => {
   try {
     // Check database connection
     const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
-    
-    // Check S3 configuration (if enabled)
-    const { isS3Configured } = await import('./services/s3Service.js')
-    const s3Status = isS3Configured() ? 'configured' : 'local-storage'
     
     res.json({
       success: true,
@@ -189,7 +161,7 @@ app.get('/api/health', async (req, res) => {
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV || 'development',
       database: dbStatus,
-      fileStorage: s3Status,
+      fileStorage: 'database',
       version: '1.0.0'
     })
   } catch (error) {
@@ -216,23 +188,22 @@ if (isProduction) {
   })
 }
 
-// Import error handlers
-import { 
-  globalErrorHandler, 
-  notFoundHandler, 
-  handleUnhandledRejection, 
-  handleUncaughtException,
-  handleGracefulShutdown 
-} from './middleware/errorHandler.js'
-
-// Handle uncaught exceptions
-handleUncaughtException()
-
-// 404 handler for undefined routes
-app.use(notFoundHandler)
+// Simple error handlers for now
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found'
+  })
+})
 
 // Global error handler
-app.use(globalErrorHandler)
+app.use((err, req, res, next) => {
+  console.error('Error:', err)
+  res.status(err.statusCode || 500).json({
+    success: false,
+    message: err.message || 'Internal server error'
+  })
+})
 
 // Start server
 const startServer = async () => {
@@ -242,19 +213,15 @@ const startServer = async () => {
     console.log(`🚀 Server running on port ${PORT}`)
     console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`)
     console.log(`🌐 Client URL: ${process.env.CLIENT_URL || 'http://localhost:5173'}`)
-    console.log(`📁 Upload path: ${process.env.UPLOAD_PATH || './uploads'}`)
   })
-
-  // Handle graceful shutdown
-  handleGracefulShutdown(server)
   
   return server
 }
-
-// Handle unhandled promise rejections
-handleUnhandledRejection()
 
 startServer().catch(error => {
   console.error('❌ Failed to start server:', error)
   process.exit(1)
 })
+
+// For Vercel, export the app
+export default app

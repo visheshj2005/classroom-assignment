@@ -1,4 +1,5 @@
 import express from 'express'
+import multer from 'multer'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
@@ -6,18 +7,45 @@ import { authMiddleware } from '../middleware/auth.js'
 import { param } from 'express-validator'
 import { handleValidationErrors } from '../middleware/validation.js'
 import FileUpload from '../models/FileUpload.js'
-import AnalyticsService from '../services/analyticsService.js'
-import { createUpload, getFileUrl, deleteFile, isS3Configured } from '../services/s3Service.js'
+// Analytics service removed for simplicity
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const router = express.Router()
 
-// Create upload instance (S3 or local based on configuration)
-const upload = createUpload()
+// Simple memory storage for now (works on Vercel)
+const storage = multer.memoryStorage()
 
-// Upload files
+// File filter
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = {
+    'assignment_attachment': ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.png', '.zip'],
+    'submission_file': ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.png', '.zip'],
+    'comment_attachment': ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.png'],
+    'profile_avatar': ['.jpg', '.jpeg', '.png', '.gif']
+  }
+
+  const category = req.body.category || 'general'
+  const ext = path.extname(file.originalname).toLowerCase()
+  
+  if (allowedTypes[category] && !allowedTypes[category].includes(ext)) {
+    return cb(new Error(`File type ${ext} not allowed for ${category}`), false)
+  }
+
+  cb(null, true)
+}
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB max for now
+    files: 5 // Max 5 files per request
+  }
+})
+
+// Upload files (simplified for now - stores in memory/database)
 router.post('/',
   authMiddleware,
   upload.array('files', 5),
@@ -37,37 +65,39 @@ router.post('/',
       const uploadedFiles = []
 
       for (const file of files) {
-        // For S3, use the key; for local, use the path
-        const filePath = isS3Configured() ? file.key : file.path
-        const fileUrl = isS3Configured() ? 
-          await getFileUrl(file.key) : 
-          `/api/uploads/files/${file.filename}`
+        // Generate unique filename
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        const ext = path.extname(file.originalname)
+        const filename = `${file.fieldname}-${uniqueSuffix}${ext}`
 
         const fileUpload = new FileUpload({
-          filename: file.filename || path.basename(file.key),
+          filename: filename,
           originalName: file.originalname,
           mimetype: file.mimetype,
           size: file.size,
-          path: filePath,
-          url: fileUrl,
+          path: `memory://${filename}`, // Indicate it's in memory
+          url: `/api/uploads/files/${filename}`,
           uploadedBy: userId,
           entityId: entityId || null,
           entityType: entityType || null,
           category: category || 'general',
-          isS3: isS3Configured(),
-          s3Key: isS3Configured() ? file.key : null
+          fileData: file.buffer.toString('base64') // Store file data as base64
         })
 
         await fileUpload.save()
-        uploadedFiles.push(fileUpload)
-
-        // Track file upload
-        await AnalyticsService.trackFileUpload(userId, {
-          filename: file.originalname,
-          size: file.size,
-          mimetype: file.mimetype,
-          category
+        uploadedFiles.push({
+          _id: fileUpload._id,
+          filename: fileUpload.filename,
+          originalName: fileUpload.originalName,
+          mimetype: fileUpload.mimetype,
+          size: fileUpload.size,
+          url: fileUpload.url,
+          category: fileUpload.category,
+          createdAt: fileUpload.createdAt
         })
+
+        // Track file upload (simplified for now)
+        console.log(`File uploaded: ${file.originalname} (${file.size} bytes)`)
       }
 
       res.json({
@@ -78,15 +108,6 @@ router.post('/',
     } catch (error) {
       console.error('Error uploading files:', error)
       
-      // Clean up uploaded files on error (local storage only)
-      if (req.files && !isS3Configured()) {
-        req.files.forEach(file => {
-          if (fs.existsSync(file.path)) {
-            fs.unlinkSync(file.path)
-          }
-        })
-      }
-
       res.status(500).json({
         success: false,
         message: error.message || 'Failed to upload files'
@@ -116,27 +137,22 @@ router.get('/files/:filename',
       // Increment download count
       await fileUpload.incrementDownload()
 
-      if (fileUpload.isS3 && fileUpload.s3Key) {
-        // For S3 files, redirect to signed URL
-        const signedUrl = await getFileUrl(fileUpload.s3Key)
-        res.redirect(signedUrl)
-      } else {
-        // For local files, stream directly
-        const filePath = fileUpload.path
-        if (!fs.existsSync(filePath)) {
-          return res.status(404).json({
-            success: false,
-            message: 'File not found on disk'
-          })
-        }
-
+      if (fileUpload.fileData) {
+        // File is stored in database as base64
+        const fileBuffer = Buffer.from(fileUpload.fileData, 'base64')
+        
         // Set appropriate headers
         res.setHeader('Content-Type', fileUpload.mimetype)
         res.setHeader('Content-Disposition', `inline; filename="${fileUpload.originalName}"`)
+        res.setHeader('Content-Length', fileBuffer.length)
         
-        // Stream the file
-        const fileStream = fs.createReadStream(filePath)
-        fileStream.pipe(res)
+        // Send the file
+        res.send(fileBuffer)
+      } else {
+        return res.status(404).json({
+          success: false,
+          message: 'File data not found'
+        })
       }
     } catch (error) {
       console.error('Error serving file:', error)
@@ -170,26 +186,22 @@ router.get('/download/:filename',
       // Increment download count
       await fileUpload.incrementDownload()
 
-      if (fileUpload.isS3 && fileUpload.s3Key) {
-        // For S3 files, generate signed URL with download disposition
-        const signedUrl = await getFileUrl(fileUpload.s3Key)
-        res.redirect(signedUrl)
-      } else {
-        // For local files, stream with download headers
-        const filePath = fileUpload.path
-        if (!fs.existsSync(filePath)) {
-          return res.status(404).json({
-            success: false,
-            message: 'File not found on disk'
-          })
-        }
-
+      if (fileUpload.fileData) {
+        // File is stored in database as base64
+        const fileBuffer = Buffer.from(fileUpload.fileData, 'base64')
+        
         // Force download
         res.setHeader('Content-Type', 'application/octet-stream')
         res.setHeader('Content-Disposition', `attachment; filename="${fileUpload.originalName}"`)
+        res.setHeader('Content-Length', fileBuffer.length)
         
-        const fileStream = fs.createReadStream(filePath)
-        fileStream.pipe(res)
+        // Send the file
+        res.send(fileBuffer)
+      } else {
+        return res.status(404).json({
+          success: false,
+          message: 'File data not found'
+        })
       }
     } catch (error) {
       console.error('Error downloading file:', error)
@@ -264,16 +276,10 @@ router.delete('/:fileId',
         })
       }
 
-      // Delete file from storage
-      if (fileUpload.isS3 && fileUpload.s3Key) {
-        await deleteFile(fileUpload.s3Key)
-      } else if (fileUpload.path && fs.existsSync(fileUpload.path)) {
-        fs.unlinkSync(fileUpload.path)
-      }
-
       // Mark as deleted in database (soft delete)
       fileUpload.isDeleted = true
       fileUpload.deletedAt = new Date()
+      fileUpload.fileData = null // Clear the file data to save space
       await fileUpload.save()
 
       res.json({
