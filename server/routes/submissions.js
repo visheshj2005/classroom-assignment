@@ -5,8 +5,7 @@ import {
   getSubmissionById,
   gradeSubmission,
   deleteSubmission,
-  getGradeDistribution,
-  upload
+  getGradeDistribution
 } from '../controllers/submissionController.js'
 import { authMiddleware, isTeacher, checkAssignmentAccess } from '../middleware/auth.js'
 import {
@@ -24,7 +23,6 @@ router.use(authMiddleware)
 
 // Create/Update submission (Student)
 router.post('/assignments/:assignmentId', [
-  upload.array('files', 3),
   assignmentIdValidation,
   checkAssignmentAccess,
   createSubmissionValidation

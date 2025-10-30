@@ -5,8 +5,7 @@ import {
   getAssignmentById,
   updateAssignment,
   deleteAssignment,
-  getAssignmentSubmissions,
-  upload
+  getAssignmentSubmissions
 } from '../controllers/assignmentController.js'
 import { authMiddleware, isTeacher, checkClassMembership, checkAssignmentAccess } from '../middleware/auth.js'
 import {
@@ -23,7 +22,6 @@ router.use(authMiddleware)
 
 // Create assignment in class (Teacher)
 router.post('/classes/:classId', [
-  upload.array('attachments', 5), // Allow up to 5 file attachments
   classIdValidation,
   checkClassMembership,
   isTeacher,

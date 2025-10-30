@@ -3,48 +3,6 @@ import Submission from '../models/Submission.js'
 import Assignment from '../models/Assignment.js'
 import AnalyticsService from '../services/analyticsService.js'
 import NotificationService from '../services/notificationService.js'
-import multer from 'multer'
-import path from 'path'
-import fs from 'fs'
-import { fileURLToPath } from 'url'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
-// Configure multer for submission files
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadsDir = path.join(__dirname, '../uploads/submissions')
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true })
-    }
-    cb(null, uploadsDir)
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname))
-  }
-})
-
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.jpeg', '.png', '.zip']
-  const ext = path.extname(file.originalname).toLowerCase()
-  
-  if (allowedTypes.includes(ext)) {
-    cb(null, true)
-  } else {
-    cb(new Error(`File type ${ext} not allowed`), false)
-  }
-}
-
-export const upload = multer({
-  storage,
-  fileFilter,
-  limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB
-    files: 3
-  }
-})
 
 // Create or update submission
 export const createSubmission = async (req, res) => {
@@ -59,7 +17,7 @@ export const createSubmission = async (req, res) => {
     }
 
     const { assignmentId } = req.params
-    const { submissionType, content } = req.body
+    const { content } = req.body
     const studentId = req.user._id
 
     // Get assignment details
@@ -87,7 +45,7 @@ export const createSubmission = async (req, res) => {
 
     if (submission) {
       // Update existing submission
-      submission.submissionType = submissionType
+      submission.submissionType = 'link'
       submission.content = content
       submission.submittedAt = new Date()
       submission.isLate = isLate
@@ -105,7 +63,7 @@ export const createSubmission = async (req, res) => {
       submission = new Submission({
         assignmentId,
         studentId,
-        submissionType,
+        submissionType: 'link',
         content,
         isLate,
         status: 'submitted'
@@ -119,7 +77,7 @@ export const createSubmission = async (req, res) => {
     // Track analytics
     await AnalyticsService.trackAssignmentSubmitted(studentId, submission._id, {
       assignmentTitle: assignment.title,
-      submissionType,
+      submissionType: 'link',
       isLate
     })
 
@@ -328,16 +286,6 @@ export const deleteSubmission = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Cannot delete graded submission'
-      })
-    }
-
-    // Delete submission files if any
-    if (submission.content.files && submission.content.files.length > 0) {
-      submission.content.files.forEach(file => {
-        const filePath = path.join(__dirname, '../uploads/submissions', file.filename)
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath)
-        }
       })
     }
 

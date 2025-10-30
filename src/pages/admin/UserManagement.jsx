@@ -373,11 +373,16 @@ const UserManagement = () => {
               <form onSubmit={(e) => {
                 e.preventDefault()
                 const formData = new FormData(e.target)
-                handleUpdateUser(editingUser._id, {
+                const updateData = {
                   name: formData.get('name'),
                   email: formData.get('email'),
                   role: formData.get('role')
-                })
+                }
+                const password = formData.get('password')
+                if (password && password.trim()) {
+                  updateData.password = password
+                }
+                handleUpdateUser(editingUser._id, updateData)
               }} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -418,6 +423,22 @@ const UserManagement = () => {
                     <option value="teacher">Teacher</option>
                     <option value="admin">Admin</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    New Password (Optional)
+                  </label>
+                  <input
+                    name="password"
+                    type="password"
+                    placeholder="Leave blank to keep current password"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    minLength={6}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Only fill this if you want to reset the user's password
+                  </p>
                 </div>
 
                 <div className="flex space-x-3 pt-4">

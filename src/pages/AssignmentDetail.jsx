@@ -27,7 +27,6 @@ const AssignmentDetail = () => {
   const [submissionLoading, setSubmissionLoading] = useState(false)
   const [showSubmissionForm, setShowSubmissionForm] = useState(false)
   const [submissionData, setSubmissionData] = useState({
-    submissionType: 'link',
     url: '',
     text: ''
   })
@@ -70,9 +69,8 @@ const AssignmentDetail = () => {
 
     try {
       const response = await api.post(`/submissions/assignments/${assignmentId}`, {
-        submissionType: submissionData.submissionType,
         content: {
-          url: submissionData.submissionType === 'link' ? submissionData.url : undefined,
+          url: submissionData.url,
           text: submissionData.text
         }
       })
@@ -80,7 +78,7 @@ const AssignmentDetail = () => {
       if (response.data.success) {
         setSubmission(response.data.data.submission)
         setShowSubmissionForm(false)
-        setSubmissionData({ submissionType: 'link', url: '', text: '' })
+        setSubmissionData({ url: '', text: '' })
         fetchAssignmentDetails() // Refresh to get updated data
       }
     } catch (error) {
@@ -339,7 +337,7 @@ const AssignmentDetail = () => {
                 <div className="flex items-center text-sm">
                   <FileText className="h-4 w-4 text-gray-400 mr-2" />
                   <span className="text-gray-600">Type:</span>
-                  <span className="ml-1 capitalize">{assignment.submissionType}</span>
+                  <span className="ml-1">URL Submission</span>
                 </div>
               </div>
             </div>
@@ -357,37 +355,22 @@ const AssignmentDetail = () => {
               </h3>
 
               <form onSubmit={handleSubmissionSubmit} className="space-y-4">
-                {assignment.submissionType === 'both' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Submission Type
-                    </label>
-                    <select
-                      value={submissionData.submissionType}
-                      onChange={(e) => setSubmissionData(prev => ({ ...prev, submissionType: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    >
-                      <option value="link">Link/URL</option>
-                      <option value="file">File Upload</option>
-                    </select>
-                  </div>
-                )}
-
-                {(submissionData.submissionType === 'link' || assignment.submissionType === 'link') && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Submission URL
-                    </label>
-                    <input
-                      type="url"
-                      value={submissionData.url}
-                      onChange={(e) => setSubmissionData(prev => ({ ...prev, url: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      placeholder="https://github.com/username/repo or https://drive.google.com/..."
-                      required
-                    />
-                  </div>
-                )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Submission URL *
+                  </label>
+                  <input
+                    type="url"
+                    value={submissionData.url}
+                    onChange={(e) => setSubmissionData(prev => ({ ...prev, url: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="https://github.com/username/repo or https://drive.google.com/..."
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Provide a link to your assignment (GitHub, Google Drive, etc.)
+                  </p>
+                </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">

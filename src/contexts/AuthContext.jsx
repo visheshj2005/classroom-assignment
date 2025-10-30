@@ -66,6 +66,8 @@ const initialState = {
 const API_BASE_URL = import.meta.env.VITE_API_URL || 
   (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api')
 
+console.log('API Base URL:', API_BASE_URL, 'Environment:', import.meta.env.MODE)
+
 // Axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -77,7 +79,7 @@ const api = axios.create({
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState)
 
-  // Set up axios interceptor for token
+  // Set up axios interceptor for token and auto-refresh
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (token) {
@@ -85,7 +87,24 @@ export const AuthProvider = ({ children }) => {
       // Verify token on app load
       verifyToken()
     }
-  }, [])
+
+    // Set up response interceptor to handle token expiration
+    const responseInterceptor = api.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        if (error.response?.status === 401 && state.isAuthenticated) {
+          // Token expired, logout user
+          console.log('Token expired, logging out user')
+          logout()
+        }
+        return Promise.reject(error)
+      }
+    )
+
+    return () => {
+      api.interceptors.response.eject(responseInterceptor)
+    }
+  }, [state.isAuthenticated])
 
   // Update axios header when token changes
   useEffect(() => {
@@ -122,6 +141,7 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'LOGIN_START' })
     
     try {
+      console.log('Attempting login with:', { email, baseURL: API_BASE_URL })
       const response = await api.post('/auth/login', { email, password })
       
       if (response.data.success) {
@@ -132,7 +152,30 @@ export const AuthProvider = ({ children }) => {
         return { success: true }
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Login failed'
+      console.error('Login error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          baseURL: error.config?.baseURL
+        }
+      })
+      
+      let errorMessage = 'Login failed'
+      
+      if (error.response?.status === 401) {
+        errorMessage = error.response?.data?.message || 'Invalid email or password'
+      } else if (error.response?.status >= 500) {
+        errorMessage = 'Server error. Please try again later.'
+      } else if (error.code === 'NETWORK_ERROR' || !error.response) {
+        errorMessage = 'Network error. Please check your connection and try again.'
+      } else {
+        errorMessage = error.response?.data?.message || 'Login failed'
+      }
+      
       dispatch({
         type: 'LOGIN_FAILURE',
         payload: errorMessage
@@ -203,7 +246,9 @@ export const AuthProvider = ({ children }) => {
       })
       
       if (response.data.success) {
-        return { success: true }
+        // Force logout after password change for security
+        await logout()
+        return { success: true, shouldLogout: true }
       }
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Password change failed'

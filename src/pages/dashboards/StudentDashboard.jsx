@@ -32,16 +32,35 @@ const StudentDashboard = () => {
       const classesData = classesResponse.data.data.classes || []
       setClasses(classesData)
 
-      // Fetch recent assignments from all classes
-      const assignmentPromises = classesData.map(cls => 
-        api.get(`/assignments/classes/${cls._id}?limit=5`)
-          .catch(() => ({ data: { data: { assignments: [] } } }))
-      )
+      // Fetch recent assignments from all classes with submission data
+      const assignmentPromises = classesData.map(async (cls) => {
+        try {
+          const response = await api.get(`/assignments/classes/${cls._id}?limit=10`)
+          const assignments = response.data.data.assignments || []
+          
+          // For each assignment, fetch the student's submission if it exists
+          const assignmentsWithSubmissions = await Promise.all(
+            assignments.map(async (assignment) => {
+              try {
+                // Get assignment details which includes mySubmission for students
+                const detailResponse = await api.get(`/assignments/${assignment._id}`)
+                return detailResponse.data.data.assignment
+              } catch (error) {
+                console.error('Error fetching assignment details:', error)
+                return assignment
+              }
+            })
+          )
+          
+          return assignmentsWithSubmissions
+        } catch (error) {
+          console.error('Error fetching assignments for class:', cls._id, error)
+          return []
+        }
+      })
       
       const assignmentResponses = await Promise.all(assignmentPromises)
-      const allAssignments = assignmentResponses.flatMap(response => 
-        response.data.data.assignments || []
-      )
+      const allAssignments = assignmentResponses.flat()
 
       // Sort by due date and take recent ones
       const sortedAssignments = allAssignments
@@ -94,6 +113,7 @@ const StudentDashboard = () => {
           grade: assignment.mySubmission.grade?.letterGrade || 'N/A'
         }
       }
+      // If submission exists but not graded, show as submitted
       return {
         status: 'Submitted',
         color: 'blue',
@@ -103,6 +123,7 @@ const StudentDashboard = () => {
       }
     }
 
+    // No submission exists
     const now = new Date()
     const dueDate = new Date(assignment.dueAt)
     
@@ -117,7 +138,7 @@ const StudentDashboard = () => {
     }
 
     return {
-      status: 'Pending',
+      status: 'Not Submitted',
       color: 'yellow',
       bgColor: 'bg-yellow-50',
       borderColor: 'border-yellow-200',

@@ -61,6 +61,30 @@ export const changePasswordValidation = [
 ]
 
 // User management validation rules
+export const updateUserValidation = [
+  param('userId')
+    .isMongoId()
+    .withMessage('Invalid user ID'),
+  body('name')
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Name must be between 2 and 100 characters'),
+  body('email')
+    .optional()
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid email'),
+  body('role')
+    .optional()
+    .isIn(['student', 'teacher', 'admin'])
+    .withMessage('Role must be student, teacher, or admin'),
+  body('password')
+    .optional()
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters long')
+]
+
 export const updateUserRoleValidation = [
   param('userId')
     .isMongoId()
@@ -152,8 +176,8 @@ export const createAssignmentValidation = [
     .withMessage('Max score must be at least 1'),
   body('submissionType')
     .optional()
-    .isIn(['file', 'link', 'both'])
-    .withMessage('Submission type must be file, link, or both')
+    .isIn(['link'])
+    .withMessage('Submission type must be link')
 ]
 
 export const assignmentIdValidation = [
@@ -164,11 +188,7 @@ export const assignmentIdValidation = [
 
 // Submission validation rules
 export const createSubmissionValidation = [
-  body('submissionType')
-    .isIn(['file', 'link'])
-    .withMessage('Submission type must be file or link'),
   body('content.url')
-    .if(body('submissionType').equals('link'))
     .isURL()
     .withMessage('Please provide a valid URL'),
   body('content.text')

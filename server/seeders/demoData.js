@@ -155,7 +155,13 @@ const seedUsers = async () => {
       }
     ]
 
-    const createdUsers = await User.insertMany(users)
+    // Create users one by one to trigger pre-save middleware for password hashing
+    const createdUsers = []
+    for (const userData of users) {
+      const user = new User(userData)
+      await user.save() // This triggers the pre-save middleware
+      createdUsers.push(user)
+    }
     console.log(`Created ${createdUsers.length} users`)
     return createdUsers
   } catch (error) {

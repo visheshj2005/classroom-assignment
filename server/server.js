@@ -44,40 +44,60 @@ if (isProduction) {
   app.set('trust proxy', 1)
 }
 
-// Rate limiting
+// Rate limiting - Very permissive for development and multiple users
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: isProduction ? 200 : 1000, // More requests in production
+  max: isProduction ? 1000 : 10000, // Very high limits
   message: {
     success: false,
     message: 'Too many requests from this IP, please try again later.'
   },
   standardHeaders: true,
-  legacyHeaders: false
-})
-
-// Auth rate limiting (more restrictive)
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Slightly more lenient for production
-  message: {
-    success: false,
-    message: 'Too many authentication attempts, please try again later.'
+  legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for auth routes in development
+    return !isProduction && req.path.startsWith('/api/auth')
   }
 })
 
-app.use(limiter)
+// Auth rate limiting - Removed restrictive limits
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: isProduction ? 100 : 1000, // Much higher limits
+  message: {
+    success: false,
+    message: 'Too many authentication attempts, please try again later.'
+  },
+  skip: (req) => {
+    // Skip rate limiting in development
+    return !isProduction
+  }
+})
 
-// CORS configuration - more permissive for Vercel
+// Only apply general rate limiting in production
+if (isProduction) {
+  app.use(limiter)
+}
+
+// CORS configuration - Very permissive for development
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
+  'http://localhost:5000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5000',
   process.env.CLIENT_URL,
   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null
 ].filter(Boolean)
 
 app.use(cors({
   origin: function (origin, callback) {
+    // In development, allow all origins
+    if (!isProduction) {
+      return callback(null, true)
+    }
+    
     // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true)
     
@@ -85,7 +105,8 @@ app.use(cors({
     if (!origin || 
         allowedOrigins.includes(origin) || 
         origin.includes('vercel.app') || 
-        origin.includes('localhost')) {
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1')) {
       return callback(null, true)
     }
     
@@ -93,7 +114,8 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
 }))
 
 // Body parsing middleware
@@ -142,8 +164,8 @@ if (isProduction) {
   app.use(express.static(path.join(__dirname, '../dist')))
 }
 
-// Routes
-app.use('/api/auth', authLimiter, authRoutes)
+// Routes - Remove auth rate limiting for better development experience
+app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/classes', classRoutes)
 app.use('/api/assignments', assignmentRoutes)

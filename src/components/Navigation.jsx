@@ -28,7 +28,7 @@ const Navigation = () => {
     { name: 'Dashboard', href: '/dashboard', icon: Home, roles: ['student', 'teacher', 'admin'] },
     { name: 'My Profile', href: '/profile', icon: User, roles: ['student', 'teacher', 'admin'] },
     { name: 'Manage Users', href: '/admin/users', icon: Users, roles: ['admin'] },
-    { name: 'My Classes', href: '/classes', icon: BookOpen, roles: ['teacher', 'admin'] },
+    { name: 'My Classes', href: '/classes', icon: BookOpen, roles: ['teacher'] },
   ]
 
   const filteredNavigation = navigation.filter(item => 

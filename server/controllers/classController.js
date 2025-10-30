@@ -50,6 +50,7 @@ export const createClass = async (req, res) => {
       description: description || '',
       subject: subject || '',
       teacherId: req.user._id,
+      createdBy: req.user._id,
       joinCode,
       settings: settings || {},
       students: [],

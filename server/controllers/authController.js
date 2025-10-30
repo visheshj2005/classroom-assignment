@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken'
 import { validationResult } from 'express-validator'
 import User from '../models/User.js'
+import OTPService from '../services/otpService.js'
 // Analytics service removed for simplicity
 
 // Generate JWT token
@@ -8,11 +9,60 @@ const generateToken = (userId) => {
   return jwt.sign(
     { userId },
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+    { expiresIn: process.env.JWT_EXPIRES_IN || '30d' } // Extended to 30 days
   )
 }
 
-// Register new user
+// Send OTP for registration
+export const sendRegistrationOTP = async (req, res) => {
+  try {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      })
+    }
+
+    const { email } = req.body
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email })
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'User with this email already exists'
+      })
+    }
+
+    // Generate and send OTP
+    const otp = OTPService.generateOTP()
+    OTPService.storeOTP(email, otp)
+    
+    const sendResult = await OTPService.sendOTP(email, otp)
+    
+    if (!sendResult.success) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send OTP'
+      })
+    }
+
+    res.json({
+      success: true,
+      message: 'OTP sent to your email address'
+    })
+  } catch (error) {
+    console.error('Send OTP error:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Server error sending OTP'
+    })
+  }
+}
+
+// Register new user with OTP verification
 export const register = async (req, res) => {
   try {
     // Check validation errors
@@ -25,9 +75,18 @@ export const register = async (req, res) => {
       })
     }
 
-    const { name, email, password, role = 'student' } = req.body
+    const { name, email, password, role = 'student', otp } = req.body
 
-    // Check if user already exists
+    // Verify OTP
+    const otpVerification = OTPService.verifyOTP(email, otp)
+    if (!otpVerification.success) {
+      return res.status(400).json({
+        success: false,
+        message: otpVerification.message
+      })
+    }
+
+    // Check if user already exists (double check)
     const existingUser = await User.findOne({ email })
     if (existingUser) {
       return res.status(400).json({

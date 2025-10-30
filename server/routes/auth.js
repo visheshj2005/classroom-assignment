@@ -1,5 +1,6 @@
 import express from 'express'
 import {
+  sendRegistrationOTP,
   register,
   login,
   getProfile,
@@ -21,7 +22,13 @@ import {
 const router = express.Router()
 
 // Public routes
-router.post('/register', registerValidation, register)
+router.post('/send-otp', [
+  body('email').isEmail().withMessage('Valid email is required')
+], sendRegistrationOTP)
+router.post('/register', [
+  ...registerValidation,
+  body('otp').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits')
+], register)
 router.post('/login', loginValidation, login)
 router.post('/forgot-password', [
   body('email').isEmail().withMessage('Valid email is required')

@@ -33,7 +33,23 @@ const ClassManagement = () => {
     try {
       setLoading(true)
       const response = await api.get('/classes/my-classes')
-      setClasses(response.data.data.classes || [])
+      const classesData = response.data.data.classes || []
+      
+      // Fetch assignment counts for each class
+      const classesWithCounts = await Promise.all(
+        classesData.map(async (cls) => {
+          try {
+            const assignmentsResponse = await api.get(`/assignments/classes/${cls._id}?limit=1`)
+            const assignmentCount = assignmentsResponse.data.data.pagination?.total || 0
+            return { ...cls, assignmentCount }
+          } catch (error) {
+            console.error('Error fetching assignments for class:', cls._id, error)
+            return { ...cls, assignmentCount: 0 }
+          }
+        })
+      )
+      
+      setClasses(classesWithCounts)
     } catch (error) {
       console.error('Error fetching classes:', error)
     } finally {
@@ -217,7 +233,7 @@ const ClassManagement = () => {
                       </div>
                       <div className="flex items-center text-gray-600">
                         <FileText className="h-4 w-4 mr-2" />
-                        <span>0 assignments</span>
+                        <span>{classItem.assignmentCount || 0} assignments</span>
                       </div>
                     </div>
 

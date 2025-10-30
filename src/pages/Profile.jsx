@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { 
   User, 
@@ -15,7 +16,8 @@ import {
 } from 'lucide-react'
 
 const Profile = () => {
-  const { user, api } = useAuth()
+  const { user, api, changePassword } = useAuth()
+  const navigate = useNavigate()
   const [isChangingPassword, setIsChangingPassword] = useState(false)
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
@@ -121,17 +123,24 @@ const Profile = () => {
     setLoading(true)
 
     try {
-      await api.patch('/auth/change-password', {
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword
-      })
+      const result = await changePassword(passwordData.currentPassword, passwordData.newPassword)
       
-      setIsChangingPassword(false)
-      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
-      alert('Password changed successfully')
+      if (result.success) {
+        setIsChangingPassword(false)
+        setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
+        
+        if (result.shouldLogout) {
+          alert('Password changed successfully. You will be redirected to login.')
+          navigate('/login')
+        } else {
+          alert('Password changed successfully')
+        }
+      } else {
+        alert(result.error || 'Failed to change password')
+      }
     } catch (error) {
       console.error('Error changing password:', error)
-      alert(error.response?.data?.message || 'Failed to change password')
+      alert('Failed to change password')
     } finally {
       setLoading(false)
     }

@@ -4,48 +4,6 @@ import Class from '../models/Class.js'
 import Submission from '../models/Submission.js'
 import AnalyticsService from '../services/analyticsService.js'
 import NotificationService from '../services/notificationService.js'
-import multer from 'multer'
-import path from 'path'
-import fs from 'fs'
-import { fileURLToPath } from 'url'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadsDir = path.join(__dirname, '../uploads/assignments')
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true })
-    }
-    cb(null, uploadsDir)
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname))
-  }
-})
-
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.jpeg', '.png', '.zip']
-  const ext = path.extname(file.originalname).toLowerCase()
-  
-  if (allowedTypes.includes(ext)) {
-    cb(null, true)
-  } else {
-    cb(new Error(`File type ${ext} not allowed`), false)
-  }
-}
-
-export const upload = multer({
-  storage,
-  fileFilter,
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB
-    files: 5
-  }
-})
 
 // Create assignment
 export const createAssignment = async (req, res) => {
@@ -65,19 +23,8 @@ export const createAssignment = async (req, res) => {
       description,
       instructions,
       dueAt,
-      maxScore,
-      submissionType,
-      allowedFileTypes
+      maxScore
     } = req.body
-
-    // Process file attachments
-    const attachments = req.files ? req.files.map(file => ({
-      filename: file.filename,
-      originalName: file.originalname,
-      mimetype: file.mimetype,
-      size: file.size,
-      url: `/api/uploads/assignments/${file.filename}`
-    })) : []
 
     const assignment = new Assignment({
       classId,
@@ -86,9 +33,7 @@ export const createAssignment = async (req, res) => {
       instructions,
       dueAt: dueAt ? new Date(dueAt) : null,
       maxScore: maxScore || 100,
-      submissionType: submissionType || 'both',
-      allowedFileTypes: allowedFileTypes || ['pdf', 'doc', 'docx', 'txt'],
-      attachments,
+      submissionType: 'link',
       createdBy: req.user._id
     })
 
@@ -175,19 +120,24 @@ export const getAssignmentById = async (req, res) => {
     }
 
     // Get user's submission if student
-    let userSubmission = null
+    let mySubmission = null
     if (req.user.role === 'student') {
-      userSubmission = await Submission.findOne({
+      mySubmission = await Submission.findOne({
         assignmentId: assignment._id,
         studentId: req.user._id
       })
     }
 
+    // Add mySubmission to assignment object for easier access in frontend
+    const assignmentData = assignment.toObject()
+    if (mySubmission) {
+      assignmentData.mySubmission = mySubmission
+    }
+
     res.json({
       success: true,
       data: {
-        assignment,
-        userSubmission
+        assignment: assignmentData
       }
     })
   } catch (error) {
@@ -262,16 +212,6 @@ export const deleteAssignment = async (req, res) => {
 
     // Delete associated submissions
     await Submission.deleteMany({ assignmentId })
-
-    // Delete assignment files
-    if (assignment.attachments && assignment.attachments.length > 0) {
-      assignment.attachments.forEach(attachment => {
-        const filePath = path.join(__dirname, '../uploads/assignments', attachment.filename)
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath)
-        }
-      })
-    }
 
     await Assignment.findByIdAndDelete(assignmentId)
 

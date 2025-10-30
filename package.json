@@ -17,12 +17,16 @@
     "preview": "vite preview",
     "start": "node server/server.js",
     "start:prod": "NODE_ENV=production node server/server.js",
-    "vercel-build": "npm run build",
+    "vercel-build": "npm run build && cd server && npm install",
     "seed": "cd server && npm run seed",
     "test": "echo \"No tests specified\" && exit 0",
     "test:api": "node test-api.js",
     "test:local": "echo \"Starting local testing...\" && npm run test:api",
     "generate-admin": "node generate-admin-hash.js",
+    "fix-passwords": "node fix-passwords.js",
+    "test-passwords": "node test-password-hashing.js",
+    "setup-email": "node setup-email.js",
+    "debug-email": "node debug-email.js",
     "postinstall": "cd server && npm install"
   },
   "dependencies": {

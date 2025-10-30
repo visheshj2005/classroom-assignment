@@ -1,5 +1,4 @@
 import { validationResult } from 'express-validator'
-import bcrypt from 'bcryptjs'
 import User from '../models/User.js'
 
 // Get all users (Admin only) with pagination and search
@@ -88,15 +87,11 @@ export const createUser = async (req, res) => {
       })
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(12)
-    const passwordHash = await bcrypt.hash(password, salt)
-
-    // Create user
+    // Create user - password will be hashed by pre-save middleware
     const user = new User({
       name,
       email,
-      passwordHash,
+      passwordHash: password, // Will be hashed by pre-save middleware
       role: role || 'student',
       isActive: true
     })
@@ -147,6 +142,84 @@ export const getUserById = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error fetching user'
+    })
+  }
+}
+
+// Update user (Admin only)
+export const updateUser = async (req, res) => {
+  try {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      })
+    }
+
+    const { userId } = req.params
+    const { name, email, role, password } = req.body
+
+    // Prevent admin from changing their own role
+    if (role && userId === req.user._id.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot change your own role'
+      })
+    }
+
+    // Check if email is already taken by another user
+    if (email) {
+      const existingUser = await User.findOne({ 
+        email, 
+        _id: { $ne: userId } 
+      })
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email is already taken by another user'
+        })
+      }
+    }
+
+    // Find the user first
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      })
+    }
+
+    // Update fields
+    if (name) user.name = name
+    if (email) user.email = email
+    if (role) user.role = role
+    if (password) {
+      // Set the password - pre-save middleware will hash it
+      user.passwordHash = password
+    }
+
+    // Save the user (this triggers pre-save middleware)
+    await user.save()
+
+    // Return user without password
+    const userResponse = user.toObject()
+    delete userResponse.passwordHash
+
+    res.json({
+      success: true,
+      message: 'User updated successfully',
+      data: {
+        user: userResponse
+      }
+    })
+  } catch (error) {
+    console.error('Update user error:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Server error updating user'
     })
   }
 }

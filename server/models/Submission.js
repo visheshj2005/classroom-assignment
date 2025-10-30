@@ -13,35 +13,22 @@ const submissionSchema = new mongoose.Schema({
   },
   submissionType: {
     type: String,
-    enum: ['file', 'link'],
+    enum: ['link'],
+    default: 'link',
     required: [true, 'Submission type is required']
   },
   content: {
     // For link submissions
     url: {
       type: String,
+      required: [true, 'URL is required'],
       validate: {
         validator: function(v) {
-          if (this.submissionType === 'link') {
-            return /^https?:\/\/.+/.test(v)
-          }
-          return true
+          return /^https?:\/\/.+/.test(v)
         },
         message: 'Please provide a valid URL'
       }
     },
-    // For file submissions
-    files: [{
-      filename: String,
-      originalName: String,
-      mimetype: String,
-      size: Number,
-      url: String,
-      uploadedAt: {
-        type: Date,
-        default: Date.now
-      }
-    }],
     // Additional text content
     text: {
       type: String,

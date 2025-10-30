@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, FileText, Calendar, Clock, Upload, Paperclip, Trash2 } from 'lucide-react'
+import { X, FileText, Calendar } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 const CreateAssignmentModal = ({ isOpen, onClose, classId, onSuccess }) => {
@@ -8,10 +8,8 @@ const CreateAssignmentModal = ({ isOpen, onClose, classId, onSuccess }) => {
     description: '',
     instructions: '',
     dueAt: '',
-    maxScore: 100,
-    submissionType: 'both'
+    maxScore: 100
   })
-  const [attachments, setAttachments] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const { api } = useAuth()
@@ -24,14 +22,7 @@ const CreateAssignmentModal = ({ isOpen, onClose, classId, onSuccess }) => {
     }))
   }
 
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files)
-    setAttachments(prev => [...prev, ...files])
-  }
 
-  const removeAttachment = (index) => {
-    setAttachments(prev => prev.filter((_, i) => i !== index))
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -39,23 +30,7 @@ const CreateAssignmentModal = ({ isOpen, onClose, classId, onSuccess }) => {
     setError('')
 
     try {
-      const formDataToSend = new FormData()
-      
-      // Add form fields
-      Object.keys(formData).forEach(key => {
-        formDataToSend.append(key, formData[key])
-      })
-      
-      // Add attachments
-      attachments.forEach(file => {
-        formDataToSend.append('attachments', file)
-      })
-
-      const response = await api.post(`/assignments/classes/${classId}`, formDataToSend, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
+      const response = await api.post(`/assignments/classes/${classId}`, formData)
 
       if (response.data.success) {
         onSuccess(response.data.data.assignment)
@@ -64,10 +39,8 @@ const CreateAssignmentModal = ({ isOpen, onClose, classId, onSuccess }) => {
           description: '',
           instructions: '',
           dueAt: '',
-          maxScore: 100,
-          submissionType: 'both'
+          maxScore: 100
         })
-        setAttachments([])
         onClose()
       }
     } catch (error) {
@@ -182,76 +155,10 @@ const CreateAssignmentModal = ({ isOpen, onClose, classId, onSuccess }) => {
               </div>
             </div>
 
-            <div>
-              <label htmlFor="submissionType" className="block text-sm font-medium text-gray-700 mb-2">
-                Submission Type
-              </label>
-              <select
-                id="submissionType"
-                name="submissionType"
-                value={formData.submissionType}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value="both">Files or Links</option>
-                <option value="file">Files Only</option>
-                <option value="link">Links Only</option>
-              </select>
-            </div>
-
-            {/* File Attachments */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Paperclip className="h-4 w-4 inline mr-1" />
-                Attachments (Optional)
-              </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-md p-4">
-                <div className="text-center">
-                  <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                  <label htmlFor="attachments" className="cursor-pointer">
-                    <span className="text-sm text-indigo-600 hover:text-indigo-500 font-medium">
-                      Click to upload files
-                    </span>
-                    <span className="text-sm text-gray-500"> or drag and drop</span>
-                  </label>
-                  <input
-                    type="file"
-                    id="attachments"
-                    multiple
-                    onChange={handleFileChange}
-                    className="hidden"
-                    accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.zip,.rar"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    PDF, DOC, TXT, Images, ZIP files up to 10MB each
-                  </p>
-                </div>
-              </div>
-              
-              {/* Show selected files */}
-              {attachments.length > 0 && (
-                <div className="mt-3 space-y-2">
-                  <p className="text-sm font-medium text-gray-700">Selected files:</p>
-                  {attachments.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded-md">
-                      <div className="flex items-center">
-                        <FileText className="h-4 w-4 text-gray-400 mr-2" />
-                        <span className="text-sm text-gray-700">{file.name}</span>
-                        <span className="text-xs text-gray-500 ml-2">
-                          ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeAttachment(index)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> Students will submit assignments by providing URLs (e.g., GitHub repositories, Google Drive links, etc.)
+              </p>
             </div>
 
             {error && (

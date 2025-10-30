@@ -31,17 +31,6 @@ const assignmentSchema = new mongoose.Schema({
       message: 'Due date must be in the future'
     }
   },
-  attachments: [{
-    filename: String,
-    originalName: String,
-    mimetype: String,
-    size: Number,
-    url: String,
-    uploadedAt: {
-      type: Date,
-      default: Date.now
-    }
-  }],
   maxScore: {
     type: Number,
     default: 100,
@@ -49,16 +38,8 @@ const assignmentSchema = new mongoose.Schema({
   },
   submissionType: {
     type: String,
-    enum: ['file', 'link', 'both'],
-    default: 'both'
-  },
-  allowedFileTypes: [{
-    type: String,
-    enum: ['pdf', 'doc', 'docx', 'txt', 'jpg', 'png', 'zip']
-  }],
-  maxFileSize: {
-    type: Number,
-    default: 10 * 1024 * 1024 // 10MB
+    enum: ['link'],
+    default: 'link'
   },
   status: {
     type: String,

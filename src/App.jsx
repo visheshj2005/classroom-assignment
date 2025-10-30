@@ -10,7 +10,10 @@ import ForgotPassword from './pages/ForgotPassword'
 import Dashboard from './pages/Dashboard'
 import Profile from './pages/Profile'
 import AssignmentDetail from './pages/AssignmentDetail'
+import AssignmentManagement from './pages/AssignmentManagement'
 import ClassManagement from './pages/ClassManagement'
+import ClassDetail from './pages/ClassDetail'
+import ClassSettings from './pages/ClassSettings'
 import UserManagement from './pages/admin/UserManagement'
 import Unauthorized from './pages/Unauthorized'
 
@@ -68,6 +71,16 @@ const AppRoutes = () => {
         } 
       />
       
+      {/* Assignment management route (for teachers) */}
+      <Route 
+        path="/assignments/:assignmentId/manage" 
+        element={
+          <PrivateRoute roles={['teacher', 'admin']}>
+            <AssignmentManagement />
+          </PrivateRoute>
+        } 
+      />
+      
       {/* Admin routes */}
       <Route 
         path="/admin/users" 
@@ -99,13 +112,18 @@ const AppRoutes = () => {
         } 
       />
       <Route 
-        path="/classes/*" 
+        path="/classes/:classId" 
         element={
           <PrivateRoute roles={['teacher', 'admin']}>
-            <div className="p-8 text-center">
-              <h1 className="text-2xl font-bold">Class Details</h1>
-              <p className="text-gray-600">Individual class features coming soon...</p>
-            </div>
+            <ClassDetail />
+          </PrivateRoute>
+        } 
+      />
+      <Route 
+        path="/classes/:classId/settings" 
+        element={
+          <PrivateRoute roles={['teacher', 'admin']}>
+            <ClassSettings />
           </PrivateRoute>
         } 
       />

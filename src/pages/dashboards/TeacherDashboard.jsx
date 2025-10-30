@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { BookOpen, Users, FileText, Clock, CheckCircle, AlertTriangle, Plus } from 'lucide-react'
 import Navigation from '../../components/Navigation'
@@ -6,6 +7,7 @@ import CreateAssignmentModal from '../../components/CreateAssignmentModal'
 
 const TeacherDashboard = () => {
   const { user, api } = useAuth()
+  const navigate = useNavigate()
   const [classes, setClasses] = useState([])
   const [recentActivity, setRecentActivity] = useState([])
   const [stats, setStats] = useState({
@@ -40,12 +42,16 @@ const TeacherDashboard = () => {
       let totalAssignments = 0
       let toGrade = 0
       const activityItems = []
+      const classesWithAssignments = []
 
       for (const cls of classesData) {
         try {
           const assignmentsResponse = await api.get(`/assignments/classes/${cls._id}?limit=50`)
           const assignments = assignmentsResponse.data.data.assignments || []
           totalAssignments += assignments.length
+          
+          // Add assignment count to class object
+          cls.assignmentCount = assignments.length
 
           // Get recent submissions for activity
           for (const assignment of assignments.slice(0, 3)) {
@@ -70,6 +76,7 @@ const TeacherDashboard = () => {
           }
         } catch (error) {
           console.error('Error fetching assignments:', error)
+          cls.assignmentCount = 0
         }
       }
 
@@ -259,12 +266,32 @@ const TeacherDashboard = () => {
                             <p className="text-sm font-medium text-gray-900">
                               {classItem.assignmentCount || 0} assignments
                             </p>
-                            <button
-                              onClick={() => handleCreateAssignment(classItem._id)}
-                              className="text-xs text-indigo-600 hover:text-indigo-500 font-medium"
-                            >
-                              + Add Assignment
-                            </button>
+                            <div className="grid grid-cols-2 gap-1 mt-2">
+                              <button
+                                onClick={() => navigate(`/classes/${classItem._id}`)}
+                                className="px-2 py-1 text-xs text-indigo-600 hover:text-indigo-500 font-medium border border-indigo-200 rounded hover:bg-indigo-50"
+                              >
+                                View Class
+                              </button>
+                              <button
+                                onClick={() => handleCreateAssignment(classItem._id)}
+                                className="px-2 py-1 text-xs text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded"
+                              >
+                                New Assignment
+                              </button>
+                              <button
+                                onClick={() => navigate(`/classes/${classItem._id}`)}
+                                className="px-2 py-1 text-xs text-gray-600 hover:text-gray-700 font-medium border border-gray-200 rounded hover:bg-gray-50"
+                              >
+                                View Details
+                              </button>
+                              <button
+                                onClick={() => navigate(`/classes/${classItem._id}/settings`)}
+                                className="px-2 py-1 text-xs text-gray-600 hover:text-gray-700 font-medium border border-gray-200 rounded hover:bg-gray-50"
+                              >
+                                Settings
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -282,43 +309,7 @@ const TeacherDashboard = () => {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="mt-8 bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Quick Actions</h2>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button 
-                onClick={() => classes.length > 0 && handleCreateAssignment(classes[0]._id)}
-                disabled={classes.length === 0}
-                className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <FileText className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm font-medium text-gray-900">Create Assignment</p>
-                <p className="text-xs text-gray-500">Add a new assignment to your class</p>
-              </button>
 
-              <button 
-                onClick={() => alert('Student management feature coming soon!')}
-                className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors"
-              >
-                <Users className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm font-medium text-gray-900">Manage Students</p>
-                <p className="text-xs text-gray-500">Add or remove students from classes</p>
-              </button>
-
-              <button 
-                onClick={() => alert('Grading feature coming soon!')}
-                className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition-colors"
-              >
-                <Clock className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm font-medium text-gray-900">Grade Submissions</p>
-                <p className="text-xs text-gray-500">Review and grade pending submissions</p>
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Create Assignment Modal */}
