@@ -91,6 +91,34 @@ class EmailService {
     }
   }
 
+  async sendEmail(email, subject, htmlContent, textContent = null) {
+    try {
+      // Wait for initialization to complete
+      await this.initPromise
+      
+      // If no text content provided, strip HTML tags for text version
+      const text = textContent || htmlContent.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
+
+      switch (this.service) {
+        case 'gmail':
+        case 'smtp':
+          return await this.sendWithNodemailer(email, subject, text, htmlContent)
+
+        case 'sendgrid':
+          return await this.sendWithSendGrid(email, subject, text, htmlContent)
+
+        case 'aws-ses':
+          return await this.sendWithAWSSES(email, subject, text, htmlContent)
+
+        default:
+          return { success: false, message: 'Email service not configured' }
+      }
+    } catch (error) {
+      console.error('Error sending email:', error)
+      return { success: false, message: 'Failed to send email' }
+    }
+  }
+
   async sendWithNodemailer(to, subject, text, html) {
     try {
       const info = await this.transporter.sendMail({
