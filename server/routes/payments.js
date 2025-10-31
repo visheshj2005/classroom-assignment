@@ -75,7 +75,7 @@ router.post('/create-order', auth, async (req, res) => {
     const options = {
       amount: tierInfo.price * 100, // Convert to paise
       currency: 'INR',
-      receipt: `subscription_${req.user.id}_${Date.now()}`,
+      receipt: `sub_${req.user.id.slice(-8)}_${Date.now().toString().slice(-8)}`,
       notes: {
         userId: req.user.id,
         tier: tier,

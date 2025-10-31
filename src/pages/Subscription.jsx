@@ -8,7 +8,7 @@ const Subscription = () => {
   const [subscriptionInfo, setSubscriptionInfo] = useState(null)
   const [plans, setPlans] = useState([])
   const [loading, setLoading] = useState(true)
-  const [upgrading, setUpgrading] = useState(false)
+  const [upgradingPlan, setUpgradingPlan] = useState(null)
 
   useEffect(() => {
     fetchSubscriptionData()
@@ -37,7 +37,7 @@ const Subscription = () => {
     if (planId === 'free') return
 
     try {
-      setUpgrading(true)
+      setUpgradingPlan(planId)
 
       // Create payment order
       const orderResponse = await api.post('/payments/create-order', { tier: planId })
@@ -71,7 +71,7 @@ const Subscription = () => {
         modal: {
           ondismiss: function() {
             console.log('Payment modal closed')
-            setUpgrading(false)
+            setUpgradingPlan(null)
           }
         },
         prefill: {
@@ -87,14 +87,14 @@ const Subscription = () => {
       rzp.on('payment.failed', function (response) {
         console.error('Payment failed:', response.error)
         alert('Payment failed. Please try again.')
-        setUpgrading(false)
+        setUpgradingPlan(null)
       })
       rzp.open()
 
     } catch (error) {
       console.error('Error initiating payment:', error)
       alert('Failed to initiate payment. Please try again.')
-      setUpgrading(false)
+      setUpgradingPlan(null)
     }
   }
 
@@ -234,12 +234,14 @@ const Subscription = () => {
 
                   <button
                     onClick={() => handleUpgrade(plan.id)}
-                    disabled={isCurrentPlan || upgrading || plan.id === 'free'}
+                    disabled={isCurrentPlan || upgradingPlan === plan.id || plan.id === 'free'}
                     className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
                       isCurrentPlan
                         ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
                         : plan.id === 'free'
                         ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                        : upgradingPlan === plan.id
+                        ? 'bg-gray-400 text-white cursor-not-allowed'
                         : isUpgrade
                         ? 'bg-indigo-600 text-white hover:bg-indigo-700'
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -249,7 +251,7 @@ const Subscription = () => {
                       ? 'Current Plan'
                       : plan.id === 'free'
                       ? 'Free Plan'
-                      : upgrading
+                      : upgradingPlan === plan.id
                       ? 'Processing...'
                       : isUpgrade
                       ? 'Upgrade Now'
