@@ -1,6 +1,6 @@
 // Test user creation script for local testing
 // Run this with: node create-test-users.js
-
+// Working on localhost
 import mongoose from 'mongoose'
 import User from './server/models/User.js'
 import dotenv from 'dotenv'
