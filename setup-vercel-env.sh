@@ -1,0 +1,49 @@
+#!/bin/bash
+echo "Setting MONGODB_URI..."
+echo 'mongodb+srv://visheshj2005:Visheshjain18@classroom-portal.dl5nzmz.mongodb.net/?appName=classroom-portal' | vercel env add MONGODB_URI production
+echo "Setting JWT_SECRET..."
+echo 'your-super-secret-jwt-key-for-local-development-minimum-32-characters-long' | vercel env add JWT_SECRET production
+echo "Setting JWT_EXPIRES_IN..."
+echo '30d' | vercel env add JWT_EXPIRES_IN production
+echo "Setting PORT..."
+echo '5000' | vercel env add PORT production
+echo "Setting NODE_ENV..."
+echo 'production' | vercel env add NODE_ENV production
+echo "Setting CLIENT_URL..."
+echo 'http://localhost:5173' | vercel env add CLIENT_URL production
+echo "Setting MAX_FILE_SIZE..."
+echo '50MB' | vercel env add MAX_FILE_SIZE production
+echo "Setting UPLOAD_PATH..."
+echo './uploads' | vercel env add UPLOAD_PATH production
+echo "Setting BCRYPT_ROUNDS..."
+echo '12' | vercel env add BCRYPT_ROUNDS production
+echo "Setting RATE_LIMIT_WINDOW_MS..."
+echo '900000' | vercel env add RATE_LIMIT_WINDOW_MS production
+echo "Setting RATE_LIMIT_MAX_REQUESTS..."
+echo '200' | vercel env add RATE_LIMIT_MAX_REQUESTS production
+echo "Setting AUTH_RATE_LIMIT_MAX..."
+echo '10' | vercel env add AUTH_RATE_LIMIT_MAX production
+echo "Setting ANALYTICS_RETENTION_DAYS..."
+echo '365' | vercel env add ANALYTICS_RETENTION_DAYS production
+echo "Setting NOTIFICATION_RETENTION_DAYS..."
+echo '30' | vercel env add NOTIFICATION_RETENTION_DAYS production
+echo "Setting ENABLE_ANALYTICS..."
+echo 'true' | vercel env add ENABLE_ANALYTICS production
+echo "Setting ENABLE_NOTIFICATIONS..."
+echo 'true' | vercel env add ENABLE_NOTIFICATIONS production
+echo "Setting ENABLE_FILE_UPLOADS..."
+echo 'true' | vercel env add ENABLE_FILE_UPLOADS production
+echo "Setting LOG_LEVEL..."
+echo 'debug' | vercel env add LOG_LEVEL production
+echo "Setting LOG_FILE..."
+echo './logs/app.log' | vercel env add LOG_FILE production
+echo "Setting CORS_ORIGIN..."
+echo 'http://localhost:5173,http://localhost:3000' | vercel env add CORS_ORIGIN production
+echo "Setting EMAIL_SERVICE..."
+echo 'gmail' | vercel env add EMAIL_SERVICE production
+echo "Setting EMAIL_USER..."
+echo 'visheshj2005@gmail.com' | vercel env add EMAIL_USER production
+echo "Setting EMAIL_PASS..."
+echo 'wxxjnvemknawzrkf' | vercel env add EMAIL_PASS production
+echo "Setting EMAIL_FROM..."
+echo 'visheshj2005@gmail.com' | vercel env add EMAIL_FROM production

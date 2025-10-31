@@ -1,0 +1,65 @@
+# Vercel Environment Variables Setup Commands
+# Run these commands one by one in your terminal
+
+# Database Configuration
+vercel env add MONGODB_URI production
+# When prompted, enter: mongodb+srv://visheshj2005:Visheshjain18@classroom-portal.dl5nzmz.mongodb.net/?appName=classroom-portal
+
+# JWT Configuration
+vercel env add JWT_SECRET production
+# When prompted, enter: your-super-secret-jwt-key-for-local-development-minimum-32-characters-long
+
+vercel env add JWT_EXPIRES_IN production
+# When prompted, enter: 7d
+
+# Server Configuration
+vercel env add NODE_ENV production
+# When prompted, enter: production
+
+# Security Configuration
+vercel env add BCRYPT_ROUNDS production
+# When prompted, enter: 12
+
+vercel env add RATE_LIMIT_WINDOW_MS production
+# When prompted, enter: 900000
+
+vercel env add RATE_LIMIT_MAX_REQUESTS production
+# When prompted, enter: 200
+
+vercel env add AUTH_RATE_LIMIT_MAX production
+# When prompted, enter: 10
+
+# Email Configuration
+vercel env add EMAIL_SERVICE production
+# When prompted, enter: gmail
+
+vercel env add EMAIL_USER production
+# When prompted, enter: visheshj2005@gmail.com
+
+vercel env add EMAIL_PASS production
+# When prompted, enter: wxxjnvemknawzrkf
+
+vercel env add EMAIL_FROM production
+# When prompted, enter: visheshj2005@gmail.com
+
+# Feature Flags
+vercel env add ENABLE_ANALYTICS production
+# When prompted, enter: true
+
+vercel env add ENABLE_NOTIFICATIONS production
+# When prompted, enter: true
+
+vercel env add ENABLE_FILE_UPLOADS production
+# When prompted, enter: true
+
+# File Upload Configuration
+vercel env add MAX_FILE_SIZE production
+# When prompted, enter: 50MB
+
+# Analytics Configuration
+vercel env add ANALYTICS_RETENTION_DAYS production
+# When prompted, enter: 365
+
+# Notification Configuration
+vercel env add NOTIFICATION_RETENTION_DAYS production
+# When prompted, enter: 30

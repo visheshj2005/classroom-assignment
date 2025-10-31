@@ -30,7 +30,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const app = express()
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 8080
 const isProduction = process.env.NODE_ENV === 'production'
 
 // Security middleware
@@ -253,14 +253,21 @@ connectDB().catch(error => {
   console.error('❌ Database connection failed:', error)
 })
 
-// Start server only in development
-if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
-  const server = app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`)
-    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`)
-    console.log(`🌐 Client URL: ${process.env.CLIENT_URL || 'http://localhost:5173'}`)
+// Start server (Cloud Run requires the server to always listen)
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${PORT}`)
+  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`)
+  console.log(`🌐 Client URL: ${process.env.CLIENT_URL || 'http://localhost:5173'}`)
+})
+
+// Graceful shutdown for Cloud Run
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully')
+  server.close(() => {
+    console.log('Process terminated')
+    process.exit(0)
   })
-}
+})
 
 // Export for Vercel
 export default app
