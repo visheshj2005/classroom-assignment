@@ -1,15 +1,58 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { X, BookOpen, Users, FileText } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { X, BookOpen, Users, FileText, Crown, AlertTriangle } from 'lucide-react'
 
 const CreateClassModal = ({ isOpen, onClose, onClassCreated }) => {
   const { api } = useAuth()
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
+  const [checkingLimits, setCheckingLimits] = useState(false)
+  const [limitInfo, setLimitInfo] = useState(null)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     subject: ''
   })
+
+  useEffect(() => {
+    if (isOpen) {
+      checkSubscriptionLimits()
+    }
+  }, [isOpen])
+
+  const checkSubscriptionLimits = async () => {
+    try {
+      setCheckingLimits(true)
+      const response = await api.get('/payments/subscription')
+      const subscriptionInfo = response.data.data
+      
+      // Check if user can create more classes
+      const currentTier = subscriptionInfo.currentTier || 'free'
+      const tierInfo = subscriptionInfo.tierInfo
+      const classCount = subscriptionInfo.classCount || 0
+      
+      const canCreate = tierInfo.maxClasses === -1 || classCount < tierInfo.maxClasses
+      
+      setLimitInfo({
+        canCreate,
+        currentTier,
+        tierInfo,
+        classCount
+      })
+    } catch (error) {
+      console.error('Error checking subscription limits:', error)
+      // Allow creation if we can't check limits
+      setLimitInfo({ canCreate: true })
+    } finally {
+      setCheckingLimits(false)
+    }
+  }
+
+  const handleUpgrade = () => {
+    onClose()
+    navigate('/subscription')
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -61,6 +104,40 @@ const CreateClassModal = ({ isOpen, onClose, onClassCreated }) => {
               <X className="h-5 w-5" />
             </button>
           </div>
+
+          {checkingLimits ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+              <span className="ml-3 text-gray-600">Checking subscription limits...</span>
+            </div>
+          ) : limitInfo && !limitInfo.canCreate ? (
+            <div className="text-center py-6">
+              <AlertTriangle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Class Limit Reached</h4>
+              <p className="text-gray-600 mb-4">
+                Your {limitInfo.currentTier} plan allows {limitInfo.tierInfo.maxClasses} class{limitInfo.tierInfo.maxClasses > 1 ? 'es' : ''}.
+                You currently have {limitInfo.classCount} class{limitInfo.classCount > 1 ? 'es' : ''}.
+              </p>
+              <p className="text-sm text-gray-500 mb-6">
+                Upgrade your subscription to create more classes.
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={onClose}
+                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpgrade}
+                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 flex items-center justify-center"
+                >
+                  <Crown className="h-4 w-4 mr-2" />
+                  Upgrade Plan
+                </button>
+              </div>
+            </div>
+          ) : (
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -148,6 +225,7 @@ const CreateClassModal = ({ isOpen, onClose, onClassCreated }) => {
               </button>
             </div>
           </form>
+          )}
         </div>
       </div>
     </div>

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import Navigation from '../components/Navigation'
+import Sidebar from '../components/Sidebar'
 import CreateClassModal from '../components/CreateClassModal'
+import JoinClassModal from '../components/JoinClassModal'
 import { 
   BookOpen, 
   Plus, 
@@ -13,7 +14,8 @@ import {
   Settings,
   Trash2,
   Eye,
-  MoreVertical
+  MoreVertical,
+  User
 } from 'lucide-react'
 
 const ClassManagement = () => {
@@ -22,8 +24,12 @@ const ClassManagement = () => {
   const [classes, setClasses] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showJoinModal, setShowJoinModal] = useState(false)
   const [selectedClass, setSelectedClass] = useState(null)
   const [showDropdown, setShowDropdown] = useState(null)
+
+  const isTeacher = user?.role === 'teacher'
+  const isStudent = user?.role === 'student'
 
   useEffect(() => {
     fetchClasses()
@@ -61,6 +67,10 @@ const ClassManagement = () => {
     setClasses(prev => [newClass, ...prev])
   }
 
+  const handleJoinClass = (newClass) => {
+    fetchClasses() // Refresh the list
+  }
+
   const handleCopyJoinCode = async (joinCode) => {
     try {
       await navigator.clipboard.writeText(joinCode)
@@ -92,18 +102,22 @@ const ClassManagement = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 lg:ml-64 p-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
+    <div className="flex min-h-screen bg-gray-50">
+      <Sidebar />
+      
+      <div className="flex-1 lg:ml-64 p-8">
       
       {/* Header */}
       <div className="bg-white shadow">
@@ -113,16 +127,26 @@ const ClassManagement = () => {
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">My Classes</h1>
                 <p className="mt-1 text-sm text-gray-600">
-                  Manage your classes and share join codes with students
+                  {isTeacher ? 'Manage your classes and share join codes with students' : 'View and manage your enrolled classes'}
                 </p>
               </div>
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Class
-              </button>
+              {isTeacher ? (
+                <button
+                  onClick={() => setShowCreateModal(true)}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Class
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowJoinModal(true)}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Join Class
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -132,16 +156,21 @@ const ClassManagement = () => {
         {classes.length === 0 ? (
           <div className="text-center py-12">
             <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No classes yet</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {isTeacher ? 'No classes yet' : 'No classes joined yet'}
+            </h3>
             <p className="text-gray-600 mb-6">
-              Create your first class to start managing assignments and students.
+              {isTeacher 
+                ? 'Create your first class to start managing assignments and students.'
+                : 'Join your first class to see assignments and participate in activities.'
+              }
             </p>
             <button
-              onClick={() => setShowCreateModal(true)}
+              onClick={() => isTeacher ? setShowCreateModal(true) : setShowJoinModal(true)}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Create Your First Class
+              {isTeacher ? 'Create Your First Class' : 'Join Your First Class'}
             </button>
           </div>
         ) : (
@@ -154,47 +183,55 @@ const ClassManagement = () => {
                       <h3 className="text-lg font-semibold text-gray-900 mb-1">
                         {classItem.title}
                       </h3>
+                      {isStudent && classItem.teacherId && (
+                        <div className="flex items-center text-sm text-gray-600 mb-1">
+                          <User className="h-4 w-4 mr-1" />
+                          {classItem.teacherId.name}
+                        </div>
+                      )}
                       {classItem.subject && (
                         <p className="text-sm text-indigo-600 font-medium">
                           {classItem.subject}
                         </p>
                       )}
                     </div>
-                    <div className="relative">
-                      <button
-                        onClick={() => setShowDropdown(showDropdown === classItem._id ? null : classItem._id)}
-                        className="p-1 text-gray-400 hover:text-gray-600"
-                      >
-                        <MoreVertical className="h-5 w-5" />
-                      </button>
-                      {showDropdown === classItem._id && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border">
-                          <div className="py-1">
-                            <button
-                              onClick={() => navigate(`/classes/${classItem._id}`)}
-                              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Details
-                            </button>
-                            <button
-                              onClick={() => navigate(`/classes/${classItem._id}/settings`)}
-                              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            >
-                              <Settings className="h-4 w-4 mr-2" />
-                              Settings
-                            </button>
-                            <button
-                              onClick={() => handleDeleteClass(classItem._id)}
-                              className="flex items-center w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete Class
-                            </button>
+                    {isTeacher && (
+                      <div className="relative">
+                        <button
+                          onClick={() => setShowDropdown(showDropdown === classItem._id ? null : classItem._id)}
+                          className="p-1 text-gray-400 hover:text-gray-600"
+                        >
+                          <MoreVertical className="h-5 w-5" />
+                        </button>
+                        {showDropdown === classItem._id && (
+                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border">
+                            <div className="py-1">
+                              <button
+                                onClick={() => navigate(`/classes/${classItem._id}`)}
+                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Details
+                              </button>
+                              <button
+                                onClick={() => navigate(`/classes/${classItem._id}/settings`)}
+                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              >
+                                <Settings className="h-4 w-4 mr-2" />
+                                Settings
+                              </button>
+                              <button
+                                onClick={() => handleDeleteClass(classItem._id)}
+                                className="flex items-center w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete Class
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {classItem.description && (
@@ -204,26 +241,28 @@ const ClassManagement = () => {
                   )}
 
                   <div className="space-y-3">
-                    {/* Join Code */}
-                    <div className="bg-gray-50 p-3 rounded-md">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs font-medium text-gray-700 uppercase tracking-wide">
-                            Join Code
-                          </p>
-                          <p className="text-lg font-mono font-bold text-gray-900">
-                            {classItem.joinCode}
-                          </p>
+                    {/* Join Code - Only show for teachers */}
+                    {isTeacher && (
+                      <div className="bg-gray-50 p-3 rounded-md">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-medium text-gray-700 uppercase tracking-wide">
+                              Join Code
+                            </p>
+                            <p className="text-lg font-mono font-bold text-gray-900">
+                              {classItem.joinCode}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleCopyJoinCode(classItem.joinCode)}
+                            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-md"
+                            title="Copy join code"
+                          >
+                            <Copy className="h-4 w-4" />
+                          </button>
                         </div>
-                        <button
-                          onClick={() => handleCopyJoinCode(classItem.joinCode)}
-                          className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-md"
-                          title="Copy join code"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </button>
                       </div>
-                    </div>
+                    )}
 
                     {/* Stats */}
                     <div className="grid grid-cols-2 gap-4 text-sm">
@@ -250,12 +289,14 @@ const ClassManagement = () => {
                     >
                       View Class
                     </button>
-                    <button
-                      onClick={() => navigate(`/classes/${classItem._id}/assignments/new`)}
-                      className="flex-1 px-3 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    >
-                      New Assignment
-                    </button>
+                    {isTeacher && (
+                      <button
+                        onClick={() => navigate(`/classes/${classItem._id}/assignments/new`)}
+                        className="flex-1 px-3 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        New Assignment
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -265,11 +306,23 @@ const ClassManagement = () => {
       </div>
 
       {/* Create Class Modal */}
-      <CreateClassModal
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        onClassCreated={handleClassCreated}
-      />
+      {isTeacher && (
+        <CreateClassModal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onClassCreated={handleClassCreated}
+        />
+      )}
+
+      {/* Join Class Modal */}
+      {isStudent && (
+        <JoinClassModal
+          isOpen={showJoinModal}
+          onClose={() => setShowJoinModal(false)}
+          onSuccess={handleJoinClass}
+        />
+      )}
+      </div>
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import Navigation from '../components/Navigation'
+import Sidebar from '../components/Sidebar'
 import {
   FileText,
   Calendar,
@@ -13,7 +13,8 @@ import {
   Send,
   Edit,
   Trash2,
-  ArrowLeft
+  ArrowLeft,
+  Download
 } from 'lucide-react'
 
 const AssignmentDetail = () => {
@@ -111,6 +112,27 @@ const AssignmentDetail = () => {
     }
   }
 
+  const handleDownloadReport = async () => {
+    try {
+      const response = await api.get(`/reports/assignments/${assignmentId}/pdf`, {
+        responseType: 'blob'
+      })
+
+      // Create blob link to download
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `${assignment.title.replace(/[^a-zA-Z0-9]/g, '_')}_report.pdf`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error downloading report:', error)
+      alert('Failed to download report. Please try again.')
+    }
+  }
+
   const formatDate = (dateString) => {
     const date = new Date(dateString)
     return date.toLocaleDateString() + ' at ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -121,10 +143,12 @@ const AssignmentDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 lg:ml-64 p-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          </div>
         </div>
       </div>
     )
@@ -132,17 +156,19 @@ const AssignmentDetail = () => {
 
   if (!assignment) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900">Assignment Not Found</h1>
-            <button
-              onClick={() => navigate(-1)}
-              className="mt-4 text-indigo-600 hover:text-indigo-500"
-            >
-              Go Back
-            </button>
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 lg:ml-64 p-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-gray-900">Assignment Not Found</h1>
+              <button
+                onClick={() => navigate(-1)}
+                className="mt-4 text-indigo-600 hover:text-indigo-500"
+              >
+                Go Back
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -150,28 +176,37 @@ const AssignmentDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
+    <div className="flex min-h-screen bg-gray-50">
+      <Sidebar />
 
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <button
-                  onClick={() => navigate(-1)}
-                  className="mr-4 p-2 text-gray-400 hover:text-gray-600"
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </button>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">{assignment.title}</h1>
-                  <p className="text-sm text-gray-600">
-                    {assignment.classId?.title} • Due {formatDate(assignment.dueAt)}
-                  </p>
-                </div>
+      <div className="flex-1 lg:ml-64 p-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <button
+                onClick={() => navigate(-1)}
+                className="mr-4 p-2 text-gray-400 hover:text-gray-600"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">{assignment.title}</h1>
+                <p className="text-sm text-gray-600">
+                  {assignment.classId?.title} • Due {formatDate(assignment.dueAt)}
+                </p>
               </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              {user?.role === 'teacher' && (
+                <button
+                  onClick={handleDownloadReport}
+                  className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download Report
+                </button>
+              )}
               {isOverdue && (
                 <span className="px-3 py-1 text-sm font-medium bg-red-100 text-red-800 rounded-full">
                   Overdue
@@ -180,9 +215,8 @@ const AssignmentDetail = () => {
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">

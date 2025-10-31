@@ -32,6 +32,27 @@ const userSchema = new mongoose.Schema({
     phone: String,
     department: String
   },
+  subscription: {
+    tier: {
+      type: String,
+      enum: ['free', 'lite', 'premium'],
+      default: 'free'
+    },
+    status: {
+      type: String,
+      enum: ['active', 'expired', 'cancelled'],
+      default: 'active'
+    },
+    startDate: {
+      type: Date,
+      default: Date.now
+    },
+    endDate: Date,
+    paymentId: String,
+    orderId: String
+  },
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
   isActive: {
     type: Boolean,
     default: true

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Razorpay Checkout</title>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            background: #f4f7f6;
+        }
+
+        .container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        input {
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+
+        button {
+            font-size: 1.2rem;
+            padding: 0.75rem 1.5rem;
+            margin-top: 1rem;
+            cursor: pointer;
+            background: #0275d8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+        }
+
+        button:disabled {
+            background: #aaa;
+        }
+
+        #receipt {
+            text-align: left;
+            margin-top: 1.5rem;
+            background: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px dashed #ccc;
+        }
+
+        #receipt p {
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div id="payment-section">
+            <h2>Enter Amount (INR)</h2>
+            <input type="number" id="amount-input" value="10">
+            <br>
+            <button id="pay-button" onclick="payNow()">Pay Now</button>
+        </div>
+
+        <div id="receipt-section" style="display: none;">
+            <h2>✅ Payment Successful!</h2>
+            <div id="receipt">
+                <h3>Payment Receipt</h3>
+                <p><strong>Payment ID:</strong> <span id="receipt-payment-id"></span></p>
+                <p><strong>Order ID:</strong> <span id="receipt-order-id"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function payNow() {
+            const amount = document.getElementById('amount-input').value;
+            const button = document.getElementById('pay-button');
+
+            if (!amount || amount <= 0) {
+                alert("Please enter a valid amount");
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = "Processing...";
+
+            try {
+                const response = await fetch("/api/create-order", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ amount: Number(amount) }),
+                });
+
+                if (!response.ok) throw new Error("Failed to create order");
+                const order = await response.json();
+                console.log("Order received from backend:", order);
+
+                const options = {
+                    key: "rzp_live_RZz1OkKBxRJyef", // This will be moved to environment variables
+                    amount: order.amount,
+                    currency: order.currency,
+                    name: "My Test Store",
+                    description: "Test Transaction",
+                    order_id: order.id,
+
+                    handler: async function (response) {
+                        console.log("--- RAZORPAY MODAL SUCCESS ---");
+                        console.log("Response:", response);
+                        console.log("Now calling /verify-payment on the server...");
+
+                        try {
+                            const verifyResponse = await fetch("/api/verify-payment", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(response),
+                            });
+
+                            if (!verifyResponse.ok) {
+                                console.error("Server verification request failed with status:", verifyResponse.status);
+                                throw new Error("Payment verification failed on server");
+                            }
+
+                            const verification = await verifyResponse.json();
+
+                            if (verification.status === "success") {
+                                console.log("✅ Server verification successful.");
+                                showReceipt(response.razorpay_payment_id, response.razorpay_order_id);
+                            } else {
+                                console.error("❌ Server verification returned 'failure'.");
+                                alert("Payment verification failed. Check server terminal for details.");
+                            }
+                        } catch (err) {
+                            console.error("Error during fetch to /verify-payment:", err);
+                            alert("An error occurred while verifying the payment. Check the console.");
+                        }
+                    },
+                    prefill: {
+                        name: "Test User",
+                        email: "test.user@example.com",
+                        contact: "9000000000"
+                    },
+                    theme: {
+                        color: "#3399cc"
+                    }
+                };
+
+                const rzp = new Razorpay(options);
+
+                rzp.on('payment.failed', function (response) {
+                    console.error("--- PAYMENT FAILED (from modal) ---");
+                    console.error("Error Code:", response.error.code);
+                    console.error("Error Description:", response.error.description);
+                    console.error("Error Reason:", response.error.reason);
+                    alert("Payment Failed: " + response.error.description);
+                });
+
+                rzp.open();
+
+            } catch (err) {
+                console.error("Payment setup failed:", err);
+                alert("Error: " + err.message);
+            } finally {
+                button.disabled = false;
+                button.textContent = "Pay Now";
+            }
+        }
+
+        function showReceipt(paymentId, orderId) {
+            document.getElementById('receipt-payment-id').textContent = paymentId;
+            document.getElementById('receipt-order-id').textContent = orderId;
+            document.getElementById('payment-section').style.display = 'none';
+            document.getElementById('receipt-section').style.display = 'block';
+            console.log("--- PAYMENT RECEIPT ---");
+            console.log("Payment ID:", paymentId);
+            console.log("Order ID:", orderId);
+        }
+    </script>
+</body>
+
+</html>

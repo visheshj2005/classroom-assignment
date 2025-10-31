@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { BookOpen, Clock, CheckCircle, AlertCircle, Plus, FileText } from 'lucide-react'
-import Navigation from '../../components/Navigation'
+import Sidebar from '../../components/Sidebar'
 import JoinClassModal from '../../components/JoinClassModal'
 
 const StudentDashboard = () => {
@@ -155,25 +155,19 @@ const StudentDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
+    <div className="flex min-h-screen bg-gray-50">
+      <Sidebar />
       
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-3">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Welcome back, {user.name}!
-            </h1>
-            <p className="mt-1 text-sm text-gray-600">
-              Here's what's happening in your classes today.
-            </p>
-          </div>
+      <div className="flex-1 lg:ml-64 p-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">
+            Welcome back, {user.name}!
+          </h1>
+          <p className="mt-1 text-sm text-gray-600">
+            Here's what's happening in your classes today.
+          </p>
         </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">

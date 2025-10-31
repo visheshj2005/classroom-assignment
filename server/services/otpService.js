@@ -104,6 +104,40 @@ class OTPService {
     }
   }
 
+  // Send HTML email (for password reset)
+  static async sendEmail(email, subject, htmlContent) {
+    try {
+      const emailService = process.env.EMAIL_SERVICE || 'mock'
+      
+      if (emailService === 'mock') {
+        // Mock email sending for development
+        console.log(`📧 Sending email to ${email}`)
+        console.log(`
+          ═══════════════════════════════════════
+          📧 EMAIL SIMULATION (Development Mode)
+          ═══════════════════════════════════════
+          To: ${email}
+          Subject: ${subject}
+          
+          ${htmlContent.replace(/<[^>]*>/g, '')} // Strip HTML for console
+          ═══════════════════════════════════════
+        `)
+        return { success: true, message: 'Email sent successfully (development mode)' }
+      }
+
+      // Production email sending
+      console.log(`📧 Attempting to send real email to: ${email}`)
+      const emailSender = await import('./emailService.js')
+      const result = await emailSender.default.sendEmail(email, subject, htmlContent)
+      console.log(`📧 Email send result:`, result)
+      
+      return result
+    } catch (error) {
+      console.error('Error sending email:', error)
+      return { success: false, message: 'Failed to send email' }
+    }
+  }
+
   // Clean expired OTPs (optional cleanup method)
   static cleanupExpiredOTPs() {
     const now = Date.now()

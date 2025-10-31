@@ -14,10 +14,23 @@ const ForgotPassword = () => {
     setError('')
 
     try {
-      // Simulate API call - In real implementation, this would send a reset email
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      setIsSubmitted(true)
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setIsSubmitted(true)
+      } else {
+        setError(data.message || 'Failed to send reset email. Please try again.')
+      }
     } catch (error) {
+      console.error('Forgot password error:', error)
       setError('Failed to send reset email. Please try again.')
     } finally {
       setIsSubmitting(false)

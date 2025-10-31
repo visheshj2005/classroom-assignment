@@ -1,29 +1,30 @@
-import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
 
-// Verify JWT token
+// Verify session-based authentication
 export const authMiddleware = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '')
-    
-    if (!token) {
+    // Check if user is logged in via session
+    if (!req.session || !req.session.userId) {
       return res.status(401).json({ 
         success: false, 
-        message: 'Access denied. No token provided.' 
+        message: 'Access denied. Please log in.' 
       })
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET)
-    const user = await User.findById(decoded.userId).select('-passwordHash')
+    const user = await User.findById(req.session.userId).select('-passwordHash')
     
     if (!user) {
+      // Clear invalid session
+      req.session.destroy()
       return res.status(401).json({ 
         success: false, 
-        message: 'Invalid token. User not found.' 
+        message: 'Invalid session. User not found.' 
       })
     }
 
     if (!user.isActive) {
+      // Clear session for deactivated user
+      req.session.destroy()
       return res.status(401).json({ 
         success: false, 
         message: 'Account is deactivated.' 
@@ -33,19 +34,7 @@ export const authMiddleware = async (req, res, next) => {
     req.user = user
     next()
   } catch (error) {
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid token.' 
-      })
-    }
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Token expired.' 
-      })
-    }
-    
+    console.error('Auth middleware error:', error)
     res.status(500).json({ 
       success: false, 
       message: 'Server error during authentication.' 
@@ -172,3 +161,6 @@ export const checkAssignmentAccess = async (req, res, next) => {
     })
   }
 }
+
+// Export auth as alias for authMiddleware for backward compatibility
+export const auth = authMiddleware

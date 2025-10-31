@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import Navigation from '../components/Navigation'
+import Sidebar from '../components/Sidebar'
 import { 
   ArrowLeft,
   Settings,
@@ -91,10 +91,12 @@ const ClassSettings = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 lg:ml-64 p-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          </div>
         </div>
       </div>
     )
@@ -102,18 +104,22 @@ const ClassSettings = () => {
 
   if (!classData) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <div className="text-center py-12">
-          <h3 className="text-lg font-medium text-gray-900">Class not found</h3>
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 lg:ml-64 p-8">
+          <div className="text-center py-12">
+            <h3 className="text-lg font-medium text-gray-900">Class not found</h3>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
+    <div className="flex min-h-screen bg-gray-50">
+      <Sidebar />
+      
+      <div className="flex-1 lg:ml-64 p-8">
       
       {/* Header */}
       <div className="bg-white shadow">
@@ -253,6 +259,7 @@ const ClassSettings = () => {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   )

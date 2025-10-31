@@ -3,6 +3,8 @@ import mongoose from 'mongoose'
 import cors from 'cors'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
+import session from 'express-session'
+import MongoStore from 'connect-mongo'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -17,6 +19,8 @@ import commentRoutes from './routes/comments.js'
 import notificationRoutes from './routes/notifications.js'
 import analyticsRoutes from './routes/analytics.js'
 import uploadRoutes from './routes/uploads.js'
+import paymentRoutes from './routes/payments.js'
+// import reportRoutes from './routes/reports.js'
 
 // Import services (simplified for now)
 
@@ -24,7 +28,13 @@ import uploadRoutes from './routes/uploads.js'
 import logger from './utils/logger.js'
 
 // Load environment variables
-dotenv.config()
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development'
+dotenv.config({ path: envFile })
+
+// Fallback to default .env if specific env file doesn't exist
+if (!process.env.MONGODB_URI) {
+  dotenv.config()
+}
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -122,6 +132,24 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 
+// Session configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-super-secret-session-key-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/classroom-assignment',
+    touchAfter: 24 * 3600 // lazy session update
+  }),
+  cookie: {
+    secure: isProduction, // Use secure cookies in production
+    httpOnly: true,
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    sameSite: isProduction ? 'none' : 'lax' // For cross-origin in production
+  },
+  name: 'classroom.sid' // Custom session name
+}))
+
 // Database connection
 const connectDB = async () => {
   try {
@@ -174,6 +202,8 @@ app.use('/api/comments', commentRoutes)
 app.use('/api/notifications', notificationRoutes)
 app.use('/api/analytics', analyticsRoutes)
 app.use('/api/uploads', uploadRoutes)
+app.use('/api/payments', paymentRoutes)
+// app.use('/api/reports', reportRoutes)
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -187,12 +217,20 @@ app.get('/api/health', (req, res) => {
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV || 'development',
       database: dbStatus,
-      fileStorage: 'database',
-      version: '1.0.0',
+      sessionStore: 'mongodb',
+      authentication: 'session-based',
+      version: '2.0.0',
+      features: {
+        forgotPassword: true,
+        sessionManagement: true,
+        paymentIntegration: true,
+        emailService: process.env.EMAIL_SERVICE || 'mock'
+      },
       routes: {
-        auth: '/api/auth/login, /api/auth/register',
+        auth: '/api/auth/login, /api/auth/register, /api/auth/forgot-password',
         users: '/api/users',
-        classes: '/api/classes'
+        classes: '/api/classes',
+        payments: '/api/payments'
       }
     })
   } catch (error) {

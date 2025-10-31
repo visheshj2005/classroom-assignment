@@ -18,7 +18,6 @@ const authReducer = (state, action) => {
         loading: false,
         isAuthenticated: true,
         user: action.payload.user,
-        token: action.payload.token,
         error: null
       }
     case 'LOGIN_FAILURE':
@@ -27,7 +26,6 @@ const authReducer = (state, action) => {
         loading: false,
         isAuthenticated: false,
         user: null,
-        token: null,
         error: action.payload
       }
     case 'LOGOUT':
@@ -35,7 +33,6 @@ const authReducer = (state, action) => {
         ...state,
         isAuthenticated: false,
         user: null,
-        token: null,
         error: null
       }
     case 'UPDATE_USER':
@@ -57,7 +54,6 @@ const authReducer = (state, action) => {
 const initialState = {
   isAuthenticated: false,
   user: null,
-  token: null,
   loading: false,
   error: null
 }
@@ -68,34 +64,31 @@ const API_BASE_URL = import.meta.env.VITE_API_URL ||
 
 console.log('API Base URL:', API_BASE_URL, 'Environment:', import.meta.env.MODE)
 
-// Axios instance
+// Axios instance with credentials for session cookies
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  withCredentials: true // Important for session cookies
 })
 
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState)
 
-  // Set up axios interceptor for token and auto-refresh
+  // Set up axios interceptor for session management
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      // Verify token on app load
-      verifyToken()
-    }
+    // Check if user is authenticated on app load
+    checkAuthStatus()
 
-    // Set up response interceptor to handle token expiration
+    // Set up response interceptor to handle session expiration
     const responseInterceptor = api.interceptors.response.use(
       (response) => response,
       async (error) => {
         if (error.response?.status === 401 && state.isAuthenticated) {
-          // Token expired, logout user
-          console.log('Token expired, logging out user')
-          logout()
+          // Session expired, logout user
+          console.log('Session expired, logging out user')
+          dispatch({ type: 'LOGOUT' })
         }
         return Promise.reject(error)
       }
@@ -106,33 +99,21 @@ export const AuthProvider = ({ children }) => {
     }
   }, [state.isAuthenticated])
 
-  // Update axios header when token changes
-  useEffect(() => {
-    if (state.token) {
-      api.defaults.headers.common['Authorization'] = `Bearer ${state.token}`
-      localStorage.setItem('token', state.token)
-    } else {
-      delete api.defaults.headers.common['Authorization']
-      localStorage.removeItem('token')
-    }
-  }, [state.token])
-
-  // Verify token validity
-  const verifyToken = async () => {
+  // Check authentication status
+  const checkAuthStatus = async () => {
     try {
       const response = await api.get('/auth/me')
       if (response.data.success) {
         dispatch({
           type: 'LOGIN_SUCCESS',
           payload: {
-            user: response.data.data.user,
-            token: localStorage.getItem('token')
+            user: response.data.data.user
           }
         })
       }
     } catch (error) {
-      console.error('Token verification failed:', error)
-      logout()
+      // User not authenticated, no action needed
+      console.log('User not authenticated')
     }
   }
 
@@ -147,7 +128,9 @@ export const AuthProvider = ({ children }) => {
       if (response.data.success) {
         dispatch({
           type: 'LOGIN_SUCCESS',
-          payload: response.data.data
+          payload: {
+            user: response.data.data.user
+          }
         })
         return { success: true }
       }
@@ -194,7 +177,9 @@ export const AuthProvider = ({ children }) => {
       if (response.data.success) {
         dispatch({
           type: 'LOGIN_SUCCESS',
-          payload: response.data.data
+          payload: {
+            user: response.data.data.user
+          }
         })
         return { success: true }
       }

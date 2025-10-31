@@ -3,6 +3,7 @@ import User from '../models/User.js'
 import { validationResult } from 'express-validator'
 import AnalyticsService from '../services/analyticsService.js'
 import NotificationService from '../services/notificationService.js'
+import { checkClassCreationLimit } from '../services/subscriptionService.js'
 
 // Generate a random 6-character join code
 const generateJoinCode = () => {
@@ -23,6 +24,22 @@ export const createClass = async (req, res) => {
         message: 'Validation failed',
         errors: errors.array()
       })
+    }
+
+    // Check subscription limits for teachers
+    if (req.user.role === 'teacher') {
+      const limitCheck = await checkClassCreationLimit(req.user._id)
+      if (!limitCheck.canCreate) {
+        return res.status(403).json({
+          success: false,
+          message: `Class creation limit reached. Your ${limitCheck.tier} plan allows ${limitCheck.limit} class${limitCheck.limit > 1 ? 'es' : ''}. Upgrade your subscription to create more classes.`,
+          data: {
+            currentCount: limitCheck.currentCount,
+            limit: limitCheck.limit,
+            tier: limitCheck.tier
+          }
+        })
+      }
     }
 
     const { title, description, subject, settings } = req.body

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import Navigation from '../components/Navigation'
+import Sidebar from '../components/Sidebar'
 import { 
   User, 
   Mail, 
@@ -165,10 +165,11 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
+    <div className="flex min-h-screen bg-gray-50">
+      <Sidebar />
       
-      {/* Header */}
+      <div className="flex-1 lg:ml-64 p-8">
+        {/* Header */}
       <div className="bg-white shadow">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-6">
@@ -434,6 +435,7 @@ const Profile = () => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   )
 }

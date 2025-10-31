@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { BookOpen, Users, FileText, Clock, CheckCircle, AlertTriangle, Plus } from 'lucide-react'
-import Navigation from '../../components/Navigation'
+import { BookOpen, Users, FileText, Clock, CheckCircle, AlertTriangle, Plus, Crown, Download } from 'lucide-react'
+import Sidebar from '../../components/Sidebar'
 import CreateAssignmentModal from '../../components/CreateAssignmentModal'
 
 const TeacherDashboard = () => {
@@ -19,10 +19,21 @@ const TeacherDashboard = () => {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [selectedClassId, setSelectedClassId] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [subscriptionInfo, setSubscriptionInfo] = useState(null)
 
   useEffect(() => {
     fetchDashboardData()
+    fetchSubscriptionInfo()
   }, [])
+
+  const fetchSubscriptionInfo = async () => {
+    try {
+      const response = await api.get('/payments/subscription')
+      setSubscriptionInfo(response.data.data)
+    } catch (error) {
+      console.error('Error fetching subscription info:', error)
+    }
+  }
 
   const fetchDashboardData = async () => {
     try {
@@ -110,6 +121,27 @@ const TeacherDashboard = () => {
     fetchDashboardData() // Refresh data
   }
 
+  const handleDownloadReport = async (assignmentId, assignmentTitle) => {
+    try {
+      const response = await api.get(`/reports/assignments/${assignmentId}/pdf`, {
+        responseType: 'blob'
+      })
+
+      // Create blob link to download
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `${assignmentTitle.replace(/[^a-zA-Z0-9]/g, '_')}_report.pdf`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error downloading report:', error)
+      alert('Failed to download report. Please try again.')
+    }
+  }
+
   const formatTimeAgo = (dateString) => {
     const now = new Date()
     const date = new Date(dateString)
@@ -129,26 +161,55 @@ const TeacherDashboard = () => {
     )
   }
 
+  const getSubscriptionBadge = () => {
+    if (!subscriptionInfo) return null
+    
+    const tier = subscriptionInfo.currentTier || 'free'
+    const colors = {
+      free: 'bg-gray-100 text-gray-800',
+      lite: 'bg-blue-100 text-blue-800',
+      premium: 'bg-purple-100 text-purple-800'
+    }
+
+    return (
+      <div className={`px-3 py-1 rounded-full text-sm font-medium ${colors[tier]} flex items-center gap-1`}>
+        {tier === 'premium' && <Crown className="h-4 w-4" />}
+        {tier.charAt(0).toUpperCase() + tier.slice(1)} Plan
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
+    <div className="flex min-h-screen bg-gray-50">
+      <Sidebar />
       
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-3">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Welcome back, {user.name}!
-            </h1>
-            <p className="mt-1 text-sm text-gray-600">
-              Manage your classes and assignments from here.
-            </p>
+      <div className="flex-1 lg:ml-64 p-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Welcome back, {user.name}!
+              </h1>
+              <p className="mt-1 text-sm text-gray-600">
+                Manage your classes and assignments from here.
+              </p>
+            </div>
+            <div className="flex items-center space-x-4">
+              {getSubscriptionBadge()}
+              {subscriptionInfo && subscriptionInfo.currentTier !== 'premium' && (
+                <button
+                  onClick={() => navigate('/subscription')}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  Upgrade Plan
+                </button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
@@ -308,8 +369,6 @@ const TeacherDashboard = () => {
             </div>
           </div>
         </div>
-
-
       </div>
 
       {/* Create Assignment Modal */}

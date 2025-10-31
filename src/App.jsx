@@ -7,6 +7,7 @@ import LandingPage from './components/LandingPage'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import Dashboard from './pages/Dashboard'
 import Profile from './pages/Profile'
 import AssignmentDetail from './pages/AssignmentDetail'
@@ -15,6 +16,9 @@ import ClassManagement from './pages/ClassManagement'
 import ClassDetail from './pages/ClassDetail'
 import ClassSettings from './pages/ClassSettings'
 import UserManagement from './pages/admin/UserManagement'
+import Subscription from './pages/Subscription'
+import StudentClasses from './pages/StudentClasses'
+import StudentAssignments from './pages/StudentAssignments'
 import Unauthorized from './pages/Unauthorized'
 
 // Layout wrapper to handle authenticated vs unauthenticated routing
@@ -39,6 +43,10 @@ const AppRoutes = () => {
       <Route 
         path="/forgot-password" 
         element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <ForgotPassword />} 
+      />
+      <Route 
+        path="/reset-password" 
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <ResetPassword />} 
       />
       
       {/* Protected routes */}
@@ -104,9 +112,19 @@ const AppRoutes = () => {
       
       {/* Teacher routes */}
       <Route 
+        path="/subscription" 
+        element={
+          <PrivateRoute roles={['teacher']}>
+            <Subscription />
+          </PrivateRoute>
+        } 
+      />
+      
+      {/* Class routes - accessible by both teachers and students */}
+      <Route 
         path="/classes" 
         element={
-          <PrivateRoute roles={['teacher', 'admin']}>
+          <PrivateRoute>
             <ClassManagement />
           </PrivateRoute>
         } 
@@ -114,7 +132,7 @@ const AppRoutes = () => {
       <Route 
         path="/classes/:classId" 
         element={
-          <PrivateRoute roles={['teacher', 'admin']}>
+          <PrivateRoute>
             <ClassDetail />
           </PrivateRoute>
         } 
@@ -128,15 +146,12 @@ const AppRoutes = () => {
         } 
       />
       
-      {/* Student routes */}
+      {/* Assignment routes */}
       <Route 
-        path="/assignments/*" 
+        path="/assignments" 
         element={
           <PrivateRoute>
-            <div className="p-8 text-center">
-              <h1 className="text-2xl font-bold">My Assignments</h1>
-              <p className="text-gray-600">Assignment features coming soon...</p>
-            </div>
+            <StudentAssignments />
           </PrivateRoute>
         } 
       />
