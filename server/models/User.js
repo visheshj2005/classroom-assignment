@@ -78,7 +78,9 @@ userSchema.pre('save', async function(next) {
   if (!this.isModified('passwordHash')) return next()
   
   try {
-    const salt = await bcrypt.genSalt(12)
+    // Use consistent salt rounds across all environments
+    const saltRounds = parseInt(process.env.BCRYPT_ROUNDS) || 12
+    const salt = await bcrypt.genSalt(saltRounds)
     this.passwordHash = await bcrypt.hash(this.passwordHash, salt)
     next()
   } catch (error) {

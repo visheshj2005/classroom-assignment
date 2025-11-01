@@ -151,7 +151,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 
 // Session configuration
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-super-secret-session-key-change-in-production',
+  secret: process.env.SESSION_SECRET || process.env.JWT_SECRET || 'your-super-secret-session-key-change-in-production',
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
@@ -159,14 +159,14 @@ app.use(session({
     touchAfter: 24 * 3600 // lazy session update
   }),
   cookie: {
-    secure: isProduction, // Use secure cookies in production
+    secure: false, // Always false for better compatibility
     httpOnly: true,
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    sameSite: isProduction ? 'none' : 'lax', // For cross-origin in production
-    domain: isProduction ? undefined : undefined // Let browser handle domain
+    sameSite: 'lax', // Always lax for better compatibility
+    domain: undefined // Let browser handle domain
   },
   name: 'classroom.sid', // Custom session name
-  proxy: isProduction // Trust proxy in production
+  proxy: true // Always trust proxy
 }))
 
 console.log('🍪 Session Configuration:')
