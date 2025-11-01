@@ -11,3 +11,9 @@ services:
         value: production
       - key: PORT
         value: 10000
+      - key: CLIENT_URL
+        value: https://classroom-assignment-pqcj.vercel.app
+      - key: FRONTEND_URL
+        value: https://classroom-assignment-pqcj.vercel.app
+      - key: CORS_ORIGIN
+        value: https://classroom-assignment-pqcj.vercel.app

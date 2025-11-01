@@ -25,5 +25,10 @@
   ],
   "env": {
     "VITE_API_URL": "https://classroom-assignment-50uu.onrender.com/api"
+  },
+  "functions": {
+    "app/api/**/*.js": {
+      "maxDuration": 30
+    }
   }
 }

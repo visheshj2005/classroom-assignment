@@ -36,6 +36,14 @@ if (!process.env.MONGODB_URI) {
   dotenv.config()
 }
 
+// Log environment info for debugging
+console.log('🔧 Environment Configuration:')
+console.log('NODE_ENV:', process.env.NODE_ENV)
+console.log('PORT:', process.env.PORT)
+console.log('CLIENT_URL:', process.env.CLIENT_URL)
+console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'Set' : 'Not set')
+console.log('SESSION_SECRET:', process.env.SESSION_SECRET ? 'Set' : 'Not set')
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
@@ -89,19 +97,26 @@ if (isProduction) {
   app.use(limiter)
 }
 
-// CORS configuration - Very permissive for development
+// CORS configuration - Updated for production
 const allowedOrigins = [
+  // Development origins
   'http://localhost:5173',
   'http://localhost:3000',
   'http://localhost:5000',
   'http://127.0.0.1:5173',
   'http://127.0.0.1:3000',
   'http://127.0.0.1:5000',
+  // Production origins
   process.env.CLIENT_URL,
   process.env.FRONTEND_URL,
   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
-  'https://classroom-assignment-pqcj.vercel.app' // Your current Vercel URL
+  'https://classroom-assignment-pqcj.vercel.app', // Your current Vercel URL
+  // Additional Vercel preview URLs
+  'https://classroom-assignment-pqcj-git-main-visheshj2005s-projects.vercel.app',
+  'https://classroom-assignment-pqcj-visheshj2005s-projects.vercel.app'
 ].filter(Boolean)
+
+console.log('🌐 Allowed CORS Origins:', allowedOrigins)
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -147,10 +162,17 @@ app.use(session({
     secure: isProduction, // Use secure cookies in production
     httpOnly: true,
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    sameSite: isProduction ? 'none' : 'lax' // For cross-origin in production
+    sameSite: isProduction ? 'none' : 'lax', // For cross-origin in production
+    domain: isProduction ? undefined : undefined // Let browser handle domain
   },
-  name: 'classroom.sid' // Custom session name
+  name: 'classroom.sid', // Custom session name
+  proxy: isProduction // Trust proxy in production
 }))
+
+console.log('🍪 Session Configuration:')
+console.log('Secure cookies:', isProduction)
+console.log('SameSite:', isProduction ? 'none' : 'lax')
+console.log('Trust proxy:', isProduction)
 
 // Database connection
 const connectDB = async () => {
