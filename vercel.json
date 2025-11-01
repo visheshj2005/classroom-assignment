@@ -22,5 +22,8 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ]
+  ],
+  "env": {
+    "VITE_API_URL": "https://classroom-assignment-50uu.onrender.com/api"
+  }
 }
