@@ -98,7 +98,9 @@ const allowedOrigins = [
   'http://127.0.0.1:3000',
   'http://127.0.0.1:5000',
   process.env.CLIENT_URL,
-  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null
+  process.env.FRONTEND_URL,
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+  'https://classroom-assignment-pqcj.vercel.app' // Your current Vercel URL
 ].filter(Boolean)
 
 app.use(cors({
