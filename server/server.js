@@ -189,10 +189,7 @@ const connectDB = async () => {
   }
 }
 
-// Serve static files in production
-if (isProduction) {
-  app.use(express.static(path.join(__dirname, '../dist')))
-}
+// Note: Static files are served by Vercel frontend, not by this backend
 
 // Routes - Remove auth rate limiting for better development experience
 app.use('/api/auth', authRoutes)
@@ -256,26 +253,20 @@ app.get('/api/test', (req, res) => {
   })
 })
 
-// Serve React app in production
-if (isProduction) {
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../dist/index.html'))
-  })
-} else {
-  // 404 handler for development
-  app.use('*', (req, res) => {
-    res.status(404).json({
-      success: false,
-      message: 'Route not found'
-    })
-  })
-}
-
-// Simple error handlers for now
+// API-only backend - frontend is served by Vercel
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Route not found'
+    message: 'API route not found',
+    availableRoutes: [
+      '/api/health',
+      '/api/test', 
+      '/api/auth/*',
+      '/api/users/*',
+      '/api/classes/*',
+      '/api/assignments/*',
+      '/api/payments/*'
+    ]
   })
 })
 
