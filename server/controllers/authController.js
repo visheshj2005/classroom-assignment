@@ -126,9 +126,13 @@ export const register = async (req, res) => {
 // Login user
 export const login = async (req, res) => {
   try {
+    console.log('🔐 Login attempt started')
+    console.log('Request body:', req.body)
+    
     // Check validation errors
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
+      console.log('❌ Validation errors:', errors.array())
       return res.status(400).json({
         success: false,
         message: 'Validation failed',
@@ -137,18 +141,25 @@ export const login = async (req, res) => {
     }
 
     const { email, password } = req.body
+    console.log(`🔍 Looking for user with email: ${email}`)
 
     // Find user by email
     const user = await User.findOne({ email })
+    console.log(`👤 User found: ${!!user}`)
+    
     if (!user) {
+      console.log(`❌ No user found with email: ${email}`)
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
       })
     }
 
+    console.log(`📋 User details: name=${user.name}, role=${user.role}, active=${user.isActive}`)
+
     // Check if account is active
     if (!user.isActive) {
+      console.log(`❌ User account is not active: ${email}`)
       return res.status(401).json({
         success: false,
         message: 'Account is deactivated. Please contact administrator.'
@@ -156,8 +167,15 @@ export const login = async (req, res) => {
     }
 
     // Verify password
+    console.log('🔑 Verifying password...')
+    console.log(`Password provided length: ${password.length}`)
+    console.log(`Stored hash length: ${user.passwordHash.length}`)
+    
     const isPasswordValid = await user.comparePassword(password)
+    console.log(`🔐 Password validation result: ${isPasswordValid}`)
+    
     if (!isPasswordValid) {
+      console.log(`❌ Password validation failed for: ${email}`)
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
@@ -167,13 +185,14 @@ export const login = async (req, res) => {
     // Create session
     req.session.userId = user._id
     req.session.userRole = user.role
+    console.log(`📝 Session created for user: ${user._id}`)
 
     // Update last login
     user.lastLogin = new Date()
     await user.save()
 
     // Login successful
-    console.log(`User logged in: ${email}`)
+    console.log(`✅ User logged in successfully: ${email}`)
 
     res.json({
       success: true,
@@ -183,7 +202,8 @@ export const login = async (req, res) => {
       }
     })
   } catch (error) {
-    console.error('Login error:', error)
+    console.error('❌ Login error:', error)
+    console.error('Error stack:', error.stack)
     res.status(500).json({
       success: false,
       message: 'Server error during login'
