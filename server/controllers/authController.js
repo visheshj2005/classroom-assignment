@@ -1,4 +1,5 @@
 import crypto from 'crypto'
+import jwt from 'jsonwebtoken'
 import { validationResult } from 'express-validator'
 import User from '../models/User.js'
 import OTPService from '../services/otpService.js'
@@ -185,20 +186,41 @@ export const login = async (req, res) => {
     // Create session
     req.session.userId = user._id
     req.session.userRole = user.role
+    
     console.log(`📝 Session created for user: ${user._id}`)
+    console.log('🔍 Session Debug:')
+    console.log('- Session ID:', req.session.id)
+    console.log('- Session userId:', req.session.userId)
+    console.log('- Session userRole:', req.session.userRole)
+    console.log('- Session cookie:', req.session.cookie)
+    console.log('- Response headers will include Set-Cookie')
 
     // Update last login
     user.lastLogin = new Date()
     await user.save()
 
+    // Generate JWT token as fallback for incognito mode
+    const jwtToken = jwt.sign(
+      { 
+        userId: user._id, 
+        role: user.role,
+        email: user.email 
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '30d' }
+    )
+
     // Login successful
     console.log(`✅ User logged in successfully: ${email}`)
+    console.log('🔑 JWT token generated for fallback auth')
 
     res.json({
       success: true,
       message: 'Login successful',
       data: {
-        user
+        user,
+        token: jwtToken, // Include JWT token for incognito mode fallback
+        authMethods: ['session', 'jwt'] // Indicate supported auth methods
       }
     })
   } catch (error) {

@@ -59,9 +59,7 @@ const CreateClassModal = ({ isOpen, onClose, onClassCreated }) => {
     setLoading(true)
 
     try {
-      console.log('Creating class with data:', formData)
       const response = await api.post('/classes', formData)
-      console.log('Class creation response:', response.data)
       if (response.data.success) {
         onClassCreated(response.data.data.class)
         setFormData({ title: '', description: '', subject: '' })

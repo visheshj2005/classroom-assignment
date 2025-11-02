@@ -62,7 +62,7 @@ const initialState = {
 const API_BASE_URL = import.meta.env.VITE_API_URL || 
   (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api')
 
-console.log('API Base URL:', API_BASE_URL, 'Environment:', import.meta.env.MODE)
+// API Base URL configured for environment
 
 // Axios instance with credentials for session cookies
 const api = axios.create({
@@ -80,6 +80,12 @@ export const AuthProvider = ({ children }) => {
 
   // Set up axios interceptor for session management
   useEffect(() => {
+    // Initialize JWT token from localStorage if available
+    const storedToken = localStorage.getItem('authToken')
+    if (storedToken) {
+      api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`
+    }
+    
     // Check if user is authenticated on app load
     checkAuthStatus()
   }, []) // Remove dependency to avoid recreation
@@ -89,11 +95,8 @@ export const AuthProvider = ({ children }) => {
     const responseInterceptor = api.interceptors.response.use(
       (response) => response,
       async (error) => {
-        console.log('API Error:', error.response?.status, error.response?.data)
-        
         if (error.response?.status === 401) {
           // Session expired or not authenticated, logout user
-          console.log('Session expired, logging out user')
           dispatch({ type: 'LOGOUT' })
         }
         return Promise.reject(error)
@@ -108,11 +111,9 @@ export const AuthProvider = ({ children }) => {
   // Check authentication status
   const checkAuthStatus = async () => {
     try {
-      console.log('Checking authentication status...')
       const response = await api.get('/auth/me')
       
       if (response.data.success && response.data.data?.user) {
-        console.log('User authenticated:', response.data.data.user.name)
         dispatch({
           type: 'LOGIN_SUCCESS',
           payload: {
@@ -120,11 +121,9 @@ export const AuthProvider = ({ children }) => {
           }
         })
       } else {
-        console.log('Invalid auth response:', response.data)
         dispatch({ type: 'LOGOUT' })
       }
     } catch (error) {
-      console.log('User not authenticated:', error.response?.status || error.message)
       dispatch({ type: 'LOGOUT' })
     }
   }
@@ -134,14 +133,23 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'LOGIN_START' })
     
     try {
-      console.log('Attempting login with:', { email, baseURL: API_BASE_URL })
       const response = await api.post('/auth/login', { email, password })
       
       if (response.data.success) {
+        const { user, token } = response.data.data
+        
+        // Store JWT token for incognito mode fallback
+        if (token) {
+          localStorage.setItem('authToken', token)
+          // Update axios default headers for future requests
+          api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+        }
+        
         dispatch({
           type: 'LOGIN_SUCCESS',
           payload: {
-            user: response.data.data.user
+            user,
+            token
           }
         })
         return { success: true }
@@ -212,6 +220,10 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
+      // Clear JWT token
+      localStorage.removeItem('authToken')
+      delete api.defaults.headers.common['Authorization']
+      
       dispatch({ type: 'LOGOUT' })
     }
   }

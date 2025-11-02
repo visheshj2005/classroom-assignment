@@ -10,6 +10,7 @@ import {
   getUserStats
 } from '../controllers/userController.js'
 import { authMiddleware, isAdmin } from '../middleware/auth.js'
+import { hybridAuthMiddleware } from '../middleware/hybridAuth.js'
 import {
   registerValidation,
   updateUserValidation,
@@ -20,8 +21,8 @@ import {
 
 const router = express.Router()
 
-// All routes require admin authentication
-router.use(authMiddleware, isAdmin)
+// All routes require admin authentication - use hybrid auth for incognito mode support
+router.use(hybridAuthMiddleware, isAdmin)
 
 // User management routes
 router.get('/', paginationValidation, getUsers)

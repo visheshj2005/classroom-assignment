@@ -11,6 +11,7 @@ import {
   logout
 } from '../controllers/authController.js'
 import { authMiddleware } from '../middleware/auth.js'
+import { hybridAuthMiddleware } from '../middleware/hybridAuth.js'
 import { body } from 'express-validator'
 import {
   registerValidation,
@@ -40,9 +41,9 @@ router.post('/reset-password', [
 ], resetPassword)
 
 // Protected routes
-router.get('/me', authMiddleware, getProfile)
-router.patch('/me', authMiddleware, updateProfileValidation, updateProfile)
-router.patch('/change-password', authMiddleware, changePasswordValidation, changePassword)
-router.post('/logout', authMiddleware, logout)
+router.get('/me', hybridAuthMiddleware, getProfile)
+router.patch('/me', hybridAuthMiddleware, updateProfileValidation, updateProfile)
+router.patch('/change-password', hybridAuthMiddleware, changePasswordValidation, changePassword)
+router.post('/logout', hybridAuthMiddleware, logout)
 
 export default router

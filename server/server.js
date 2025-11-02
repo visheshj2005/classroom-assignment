@@ -273,6 +273,10 @@ app.use('/api/analytics', analyticsRoutes)
 app.use('/api/uploads', uploadRoutes)
 app.use('/api/payments', paymentRoutes)
 
+// Debug routes (temporary)
+import debugRoutes from './routes/debug.js'
+app.use('/api/debug', debugRoutes)
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   try {
