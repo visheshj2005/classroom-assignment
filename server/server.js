@@ -114,32 +114,38 @@ const allowedOrigins = [
   'https://classroom-assignment-pqcj-git-main-visheshj2005s-projects.vercel.app',
   'https://classroom-assignment-pqcj-visheshj2005s-projects.vercel.app',
   // Ngrok domains for hybrid deployment
-  'https://paronymous-jacki-gelatinously.ngrok-free.dev/api'
+  'https://paronymous-jacki-gelatinously.ngrok-free.dev'
 ].filter(Boolean)
 
 console.log('🌐 Allowed CORS Origins:', allowedOrigins)
 
 app.use(cors({
   origin: function (origin, callback) {
-    // In development, allow all origins
+    console.log('🔍 CORS Check - Origin:', origin, 'Production:', isProduction)
+
+    // In development, allow all origins but return the specific origin for credentials
     if (!isProduction) {
-      return callback(null, true)
+      // For development, still return specific origin to avoid wildcard issues
+      return callback(null, origin || 'http://localhost:5173')
     }
-    
-    // Allow requests with no origin (mobile apps, etc.)
-    if (!origin) return callback(null, true)
-    
-    // Allow all Vercel domains, localhost, and ngrok domains
-    if (!origin || 
-        allowedOrigins.includes(origin) || 
-        origin.includes('vercel.app') || 
-        origin.includes('localhost') ||
-        origin.includes('127.0.0.1') ||
-        origin.includes('ngrok-free.dev') ||
-        origin.includes('ngrok.io')) {
-      return callback(null, true)
+
+    // Allow requests with no origin (mobile apps, etc.) - but return a specific origin
+    if (!origin) {
+      return callback(null, 'https://classroom-assignment-pqcj.vercel.app')
     }
-    
+
+    // Check if origin is allowed and return the specific origin (never true/*)
+    if (allowedOrigins.includes(origin) ||
+      origin.includes('vercel.app') ||
+      origin.includes('localhost') ||
+      origin.includes('127.0.0.1') ||
+      origin.includes('ngrok-free.dev') ||
+      origin.includes('ngrok.io')) {
+      console.log('✅ CORS Allowed for origin:', origin)
+      return callback(null, origin) // Return the specific origin, never true
+    }
+
+    console.log('❌ CORS Blocked for origin:', origin)
     callback(new Error('Not allowed by CORS'))
   },
   credentials: true,
@@ -192,22 +198,22 @@ const connectDB = async () => {
       process.env.MONGODB_URI || 'mongodb://localhost:27017/classroom-assignment',
       options
     )
-    
+
     logger.info(`📊 MongoDB Connected: ${conn.connection.host}`)
-    
+
     // Log database events
     mongoose.connection.on('error', (err) => {
       logger.error('MongoDB connection error', { error: err.message })
     })
-    
+
     mongoose.connection.on('disconnected', () => {
       logger.warn('MongoDB disconnected')
     })
-    
+
     mongoose.connection.on('reconnected', () => {
       logger.info('MongoDB reconnected')
     })
-    
+
   } catch (error) {
     logger.error('Database connection error', { error: error.message })
     process.exit(1)
@@ -233,7 +239,7 @@ app.get('/api/health', (req, res) => {
   try {
     // Check database connection
     const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
-    
+
     res.json({
       success: true,
       message: 'Server is running',
@@ -284,7 +290,7 @@ app.use('*', (req, res) => {
     message: 'API route not found',
     availableRoutes: [
       '/api/health',
-      '/api/test', 
+      '/api/test',
       '/api/auth/*',
       '/api/users/*',
       '/api/classes/*',
