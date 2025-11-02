@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { Users, BookOpen, FileText, Shield, TrendingUp, AlertCircle } from 'lucide-react'
 import Sidebar from '../../components/Sidebar'
+import AuthDebugger from '../../components/AuthDebugger'
 
 const AdminDashboard = () => {
   const { user, api } = useAuth()
@@ -27,22 +28,33 @@ const AdminDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true)
+      console.log('Fetching dashboard data...')
       
       // Fetch user statistics
       const userStatsResponse = await api.get('/users/stats')
+      console.log('User stats response:', userStatsResponse.data)
+      
       if (userStatsResponse.data.success) {
         setStats(prevStats => ({
           ...prevStats,
           totalUsers: userStatsResponse.data.data.totalUsers,
           roleDistribution: userStatsResponse.data.data.roleDistribution
         }))
+        console.log('Dashboard data updated successfully')
+      } else {
+        console.error('Failed to fetch user stats:', userStatsResponse.data)
       }
 
       // You can add more API calls here for classes, assignments, etc.
       // For now, we'll use placeholder values for the other stats
       
     } catch (error) {
-      console.error('Error fetching dashboard data:', error)
+      console.error('Error fetching dashboard data:', error.response?.data || error.message)
+      
+      // If it's an authentication error, the interceptor will handle logout
+      if (error.response?.status === 401) {
+        console.log('Authentication required for dashboard data')
+      }
     } finally {
       setLoading(false)
     }
@@ -53,6 +65,9 @@ const AdminDashboard = () => {
       <Sidebar />
       
       <div className="flex-1 lg:ml-72 p-8">
+        {/* Temporary Auth Debugger */}
+        <AuthDebugger />
+        
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">

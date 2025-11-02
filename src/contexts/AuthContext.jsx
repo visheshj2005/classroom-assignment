@@ -80,13 +80,17 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Check if user is authenticated on app load
     checkAuthStatus()
+  }, []) // Remove dependency to avoid recreation
 
-    // Set up response interceptor to handle session expiration
+  // Set up response interceptor once
+  useEffect(() => {
     const responseInterceptor = api.interceptors.response.use(
       (response) => response,
       async (error) => {
-        if (error.response?.status === 401 && state.isAuthenticated) {
-          // Session expired, logout user
+        console.log('API Error:', error.response?.status, error.response?.data)
+        
+        if (error.response?.status === 401) {
+          // Session expired or not authenticated, logout user
           console.log('Session expired, logging out user')
           dispatch({ type: 'LOGOUT' })
         }
@@ -97,23 +101,29 @@ export const AuthProvider = ({ children }) => {
     return () => {
       api.interceptors.response.eject(responseInterceptor)
     }
-  }, [state.isAuthenticated])
+  }, []) // No dependencies - set up once
 
   // Check authentication status
   const checkAuthStatus = async () => {
     try {
+      console.log('Checking authentication status...')
       const response = await api.get('/auth/me')
-      if (response.data.success) {
+      
+      if (response.data.success && response.data.data?.user) {
+        console.log('User authenticated:', response.data.data.user.name)
         dispatch({
           type: 'LOGIN_SUCCESS',
           payload: {
             user: response.data.data.user
           }
         })
+      } else {
+        console.log('Invalid auth response:', response.data)
+        dispatch({ type: 'LOGOUT' })
       }
     } catch (error) {
-      // User not authenticated, no action needed
-      console.log('User not authenticated')
+      console.log('User not authenticated:', error.response?.status || error.message)
+      dispatch({ type: 'LOGOUT' })
     }
   }
 
