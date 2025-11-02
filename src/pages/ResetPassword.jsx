@@ -1,6 +1,19 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { BookOpen, Lock, ArrowLeft, CheckCircle, Eye, EyeOff } from 'lucide-react'
+import axios from 'axios'
+
+// API configuration to match AuthContext
+const API_BASE_URL = import.meta.env.VITE_API_URL || 
+  (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api')
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  withCredentials: true
+})
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams()
@@ -42,32 +55,25 @@ const ResetPassword = () => {
     }
 
     try {
-      const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          token,
-          newPassword: formData.newPassword
-        }),
+      const response = await api.post('/auth/reset-password', {
+        email,
+        token,
+        newPassword: formData.newPassword
       })
 
-      const data = await response.json()
-
-      if (data.success) {
+      if (response.data.success) {
         setIsSubmitted(true)
         // Redirect to login after 3 seconds
         setTimeout(() => {
           navigate('/login')
         }, 3000)
       } else {
-        setError(data.message || 'Failed to reset password. Please try again.')
+        setError(response.data.message || 'Failed to reset password. Please try again.')
       }
     } catch (error) {
       console.error('Reset password error:', error)
-      setError('Failed to reset password. Please try again.')
+      const errorMessage = error.response?.data?.message || 'Failed to reset password. Please try again.'
+      setError(errorMessage)
     } finally {
       setIsSubmitting(false)
     }

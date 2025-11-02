@@ -1,6 +1,19 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { BookOpen, Mail, ArrowLeft, CheckCircle } from 'lucide-react'
+import axios from 'axios'
+
+// API configuration to match AuthContext
+const API_BASE_URL = import.meta.env.VITE_API_URL || 
+  (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api')
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  withCredentials: true
+})
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('')
@@ -14,24 +27,17 @@ const ForgotPassword = () => {
     setError('')
 
     try {
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      })
+      const response = await api.post('/auth/forgot-password', { email })
 
-      const data = await response.json()
-
-      if (data.success) {
+      if (response.data.success) {
         setIsSubmitted(true)
       } else {
-        setError(data.message || 'Failed to send reset email. Please try again.')
+        setError(response.data.message || 'Failed to send reset email. Please try again.')
       }
     } catch (error) {
       console.error('Forgot password error:', error)
-      setError('Failed to send reset email. Please try again.')
+      const errorMessage = error.response?.data?.message || 'Failed to send reset email. Please try again.'
+      setError(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
