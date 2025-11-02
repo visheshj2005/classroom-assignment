@@ -20,6 +20,11 @@ const AuthDebugger = () => {
 
   const checkAuthDebugInfo = async () => {
     try {
+      // Test basic connectivity first
+      console.log('🔍 Debug: Testing basic connectivity...')
+      console.log('🔍 API Base URL:', api.defaults.baseURL)
+      console.log('🔍 Headers:', api.defaults.headers)
+      
       // Test authentication
       console.log('🔍 Debug: Checking auth status...')
       const authResponse = await api.get('/auth/me')
@@ -42,11 +47,25 @@ const AuthDebugger = () => {
 
     } catch (error) {
       console.error('🔍 Debug: Error during checks:', error)
+      
+      let errorDetails = 'Unknown error'
+      if (error.code === 'ECONNABORTED') {
+        errorDetails = 'Request timeout - ngrok tunnel might be slow'
+      } else if (error.code === 'ERR_NETWORK') {
+        errorDetails = 'Network error - ngrok tunnel might be down or blocked'
+      } else if (error.response) {
+        errorDetails = `${error.response.status}: ${error.response.data?.message || error.response.statusText}`
+      } else if (error.request) {
+        errorDetails = 'No response from server - check ngrok tunnel'
+      } else {
+        errorDetails = error.message
+      }
+      
       setDebugInfo(prev => ({
         ...prev,
         authStatus: error.response?.status === 401 ? 'unauthorized' : 'error',
         apiStatus: 'failed',
-        lastError: `${error.response?.status || 'Network'}: ${error.response?.data?.message || error.message}`
+        lastError: errorDetails
       }))
     }
   }
@@ -57,7 +76,25 @@ const AuthDebugger = () => {
       const response = await api.get('/users/stats')
       alert(`API Test Success: ${JSON.stringify(response.data, null, 2)}`)
     } catch (error) {
-      alert(`API Test Failed: ${error.response?.data?.message || error.message}`)
+      const errorMsg = error.code === 'ERR_NETWORK' 
+        ? 'Network Error - Check ngrok tunnel' 
+        : error.response?.data?.message || error.message
+      alert(`API Test Failed: ${errorMsg}`)
+    }
+  }
+
+  const testConnectivity = async () => {
+    try {
+      console.log('🌐 Testing basic connectivity...')
+      const response = await fetch(api.defaults.baseURL.replace('/api', ''), {
+        method: 'GET',
+        headers: {
+          'ngrok-skip-browser-warning': 'true'
+        }
+      })
+      alert(`Connectivity Test: ${response.ok ? 'SUCCESS' : 'FAILED'} (Status: ${response.status})`)
+    } catch (error) {
+      alert(`Connectivity Test Failed: ${error.message}`)
     }
   }
 
@@ -91,7 +128,7 @@ const AuthDebugger = () => {
         </div>
       )}
 
-      <div className="mt-4 space-x-2">
+      <div className="mt-4 space-x-2 flex flex-wrap gap-2">
         <button
           onClick={checkAuthDebugInfo}
           className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
@@ -103,6 +140,12 @@ const AuthDebugger = () => {
           className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
         >
           Test API Call
+        </button>
+        <button
+          onClick={testConnectivity}
+          className="px-3 py-1 bg-purple-500 text-white rounded text-sm hover:bg-purple-600"
+        >
+          Test Connectivity
         </button>
       </div>
 

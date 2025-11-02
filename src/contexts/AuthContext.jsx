@@ -68,9 +68,11 @@ console.log('API Base URL:', API_BASE_URL, 'Environment:', import.meta.env.MODE)
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true' // Required for ngrok tunnels
   },
-  withCredentials: true // Important for session cookies
+  withCredentials: true, // Important for session cookies
+  timeout: 10000 // 10 second timeout
 })
 
 export const AuthProvider = ({ children }) => {

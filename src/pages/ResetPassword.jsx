@@ -10,9 +10,11 @@ const API_BASE_URL = import.meta.env.VITE_API_URL ||
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true'
   },
-  withCredentials: true
+  withCredentials: true,
+  timeout: 10000
 })
 
 const ResetPassword = () => {
