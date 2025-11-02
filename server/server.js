@@ -114,7 +114,7 @@ const allowedOrigins = [
   'https://classroom-assignment-pqcj-git-main-visheshj2005s-projects.vercel.app',
   'https://classroom-assignment-pqcj-visheshj2005s-projects.vercel.app',
   // Ngrok domains for hybrid deployment
-  'https://paronymous-jacki-gelatinously.ngrok-free.dev'
+  'https://paronymous-jacki-gelatinously.ngrok-free.dev/api'
 ].filter(Boolean)
 
 console.log('🌐 Allowed CORS Origins:', allowedOrigins)
