@@ -207,10 +207,10 @@ app.use(session({
     touchAfter: 24 * 3600 // lazy session update
   }),
   cookie: {
-    secure: false, // Always false for better compatibility
+    secure: true, // Must be true for HTTPS cross-origin requests
     httpOnly: true,
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    sameSite: 'lax', // Always lax for better compatibility
+    sameSite: 'none', // Required for cross-origin requests
     domain: undefined // Let browser handle domain
   },
   name: 'classroom.sid', // Custom session name
