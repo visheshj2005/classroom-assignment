@@ -119,44 +119,83 @@ const allowedOrigins = [
 
 console.log('🌐 Allowed CORS Origins:', allowedOrigins)
 
-app.use(cors({
-  origin: function (origin, callback) {
-    console.log('🔍 CORS Check - Origin:', origin, 'Production:', isProduction)
-
-    // In development, allow all origins but return the specific origin for credentials
-    if (!isProduction) {
-      // For development, still return specific origin to avoid wildcard issues
-      return callback(null, origin || 'http://localhost:5173')
-    }
-
-    // Allow requests with no origin (mobile apps, etc.) - but return a specific origin
+// Custom CORS middleware to ensure no wildcards with credentials
+app.use((req, res, next) => {
+  const origin = req.headers.origin
+  console.log('🔍 CORS Middleware - Origin:', origin, 'Production:', isProduction)
+  
+  let allowedOrigin = null
+  
+  // Determine allowed origin
+  if (!isProduction) {
+    // Development: allow the specific origin or default to localhost
+    allowedOrigin = origin || 'http://localhost:5173'
+  } else {
+    // Production: check against allowed origins
     if (!origin) {
-      return callback(null, 'https://classroom-assignment-pqcj.vercel.app')
-    }
-
-    // Check if origin is allowed and return the specific origin (never true/*)
-    if (allowedOrigins.includes(origin) ||
+      allowedOrigin = 'https://classroom-assignment-pqcj.vercel.app'
+    } else if (
+      allowedOrigins.includes(origin) ||
       origin.includes('vercel.app') ||
       origin.includes('localhost') ||
       origin.includes('127.0.0.1') ||
       origin.includes('ngrok-free.dev') ||
-      origin.includes('ngrok.io')) {
-      console.log('✅ CORS Allowed for origin:', origin)
-      return callback(null, origin) // Return the specific origin, never true
+      origin.includes('ngrok.io')
+    ) {
+      allowedOrigin = origin
     }
-
+  }
+  
+  if (allowedOrigin) {
+    console.log('✅ CORS Allowed for origin:', allowedOrigin)
+    res.header('Access-Control-Allow-Origin', allowedOrigin)
+    res.header('Access-Control-Allow-Credentials', 'true')
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS')
+    res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With,ngrok-skip-browser-warning')
+    res.header('Access-Control-Max-Age', '86400') // 24 hours
+    
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end()
+    }
+  } else {
     console.log('❌ CORS Blocked for origin:', origin)
-    callback(new Error('Not allowed by CORS'))
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'ngrok-skip-browser-warning'],
-  optionsSuccessStatus: 200
-}))
+    return res.status(403).json({ error: 'CORS: Origin not allowed' })
+  }
+  
+  next()
+})
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
+
+// Ensure CORS headers are never overridden
+app.use((req, res, next) => {
+  // Store original methods
+  const originalSetHeader = res.setHeader
+  const originalHeader = res.header
+  
+  // Override setHeader to prevent wildcard with credentials
+  res.setHeader = function(name, value) {
+    if (name.toLowerCase() === 'access-control-allow-origin' && value === '*' && res.getHeader('access-control-allow-credentials')) {
+      console.log('🚫 Prevented wildcard CORS origin with credentials!')
+      return originalSetHeader.call(this, name, 'https://classroom-assignment-pqcj.vercel.app')
+    }
+    return originalSetHeader.call(this, name, value)
+  }
+  
+  // Override header method as well
+  res.header = function(name, value) {
+    if (name.toLowerCase() === 'access-control-allow-origin' && value === '*' && res.getHeader('access-control-allow-credentials')) {
+      console.log('🚫 Prevented wildcard CORS origin with credentials!')
+      return originalHeader.call(this, name, 'https://classroom-assignment-pqcj.vercel.app')
+    }
+    return originalHeader.call(this, name, value)
+  }
+  
+  next()
+})
 
 // Session configuration
 app.use(session({
