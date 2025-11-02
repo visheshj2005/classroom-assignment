@@ -1,0 +1,430 @@
+{
+  "info": {
+    "name": "Classroom Assignment - Render Login Test",
+    "description": "Comprehensive Postman collection to test login functionality on Render deployment",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "2.0.0"
+  },
+  "variable": [
+    {
+      "key": "render_url",
+      "value": "https://classroom-assignment-50uu.onrender.com/api",
+      "type": "string",
+      "description": "Render backend API URL"
+    },
+    {
+      "key": "localhost_url",
+      "value": "http://localhost:8080/api",
+      "type": "string",
+      "description": "Local development API URL"
+    }
+  ],
+  "item": [
+    {
+      "name": "🏥 Health Check - Render",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{render_url}}/health",
+          "host": ["{{render_url}}"],
+          "path": ["health"]
+        },
+        "description": "Check if Render backend is healthy and database is connected"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Health check successful', function () {",
+              "    pm.response.to.have.status(200);",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.success).to.be.true;",
+              "    ",
+              "    console.log('🏥 Health Status:', response.message);",
+              "    console.log('📊 Database:', response.database);",
+              "    console.log('🌍 Environment:', response.environment);",
+              "    console.log('🔐 Auth Type:', response.authentication);",
+              "    console.log('📦 Version:', response.version);",
+              "    ",
+              "    // Store health status for other requests",
+              "    pm.globals.set('backend_healthy', response.success);",
+              "    pm.globals.set('database_status', response.database);",
+              "});",
+              "",
+              "pm.test('Database is connected', function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.database).to.eql('connected');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🧪 Test API Endpoint - Render",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{render_url}}/test",
+          "host": ["{{render_url}}"],
+          "path": ["test"]
+        },
+        "description": "Test basic API connectivity"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Test endpoint accessible', function () {",
+              "    pm.response.to.have.status(200);",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.success).to.be.true;",
+              "    console.log('🧪 API Test:', response.message);",
+              "    console.log('⏰ Timestamp:', response.timestamp);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔐 Login - Admin (Seeder)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@classroom.com\",\n  \"password\": \"admin123\"\n}"
+        },
+        "url": {
+          "raw": "{{render_url}}/auth/login",
+          "host": ["{{render_url}}"],
+          "path": ["auth", "login"]
+        },
+        "description": "Test login with seeder admin credentials"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();",
+              "console.log('🔐 Login Response:', JSON.stringify(response, null, 2));",
+              "console.log('📊 Status Code:', pm.response.code);",
+              "",
+              "if (response.success) {",
+              "    pm.test('✅ Admin login successful', function () {",
+              "        pm.response.to.have.status(200);",
+              "        pm.expect(response.success).to.be.true;",
+              "        pm.expect(response.data.user).to.exist;",
+              "    });",
+              "    ",
+              "    console.log('✅ SUCCESS!');",
+              "    console.log('👤 User:', response.data.user.name);",
+              "    console.log('🎭 Role:', response.data.user.role);",
+              "    console.log('📧 Email:', response.data.user.email);",
+              "    console.log('🟢 Active:', response.data.user.isActive);",
+              "    ",
+              "    // Store successful credentials",
+              "    pm.globals.set('working_admin_email', 'admin@classroom.com');",
+              "    pm.globals.set('working_admin_password', 'admin123');",
+              "    pm.globals.set('login_successful', true);",
+              "} else {",
+              "    console.log('❌ Login failed:', response.message);",
+              "    pm.test('❌ Login failed as expected', function () {",
+              "        pm.response.to.have.status(401);",
+              "    });",
+              "    pm.globals.set('login_successful', false);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔐 Login - Teacher (Sarah Johnson)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"sarah.johnson@classroom.com\",\n  \"password\": \"teacher123\"\n}"
+        },
+        "url": {
+          "raw": "{{render_url}}/auth/login",
+          "host": ["{{render_url}}"],
+          "path": ["auth", "login"]
+        },
+        "description": "Test login with seeder teacher credentials"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();",
+              "console.log('🔐 Teacher Login Response:', JSON.stringify(response, null, 2));",
+              "console.log('📊 Status Code:', pm.response.code);",
+              "",
+              "if (response.success) {",
+              "    pm.test('✅ Teacher login successful', function () {",
+              "        pm.response.to.have.status(200);",
+              "        pm.expect(response.success).to.be.true;",
+              "        pm.expect(response.data.user.role).to.eql('teacher');",
+              "    });",
+              "    ",
+              "    console.log('✅ SUCCESS!');",
+              "    console.log('👩‍🏫 Teacher:', response.data.user.name);",
+              "    console.log('🎭 Role:', response.data.user.role);",
+              "    console.log('📧 Email:', response.data.user.email);",
+              "} else {",
+              "    console.log('❌ Teacher login failed:', response.message);",
+              "    pm.test('❌ Teacher login failed', function () {",
+              "        pm.response.to.have.status(401);",
+              "    });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔐 Login - Personal Admin",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"viditj47@gmail.com\",\n  \"password\": \"Visheshjain18@\"\n}"
+        },
+        "url": {
+          "raw": "{{render_url}}/auth/login",
+          "host": ["{{render_url}}"],
+          "path": ["auth", "login"]
+        },
+        "description": "Test login with personal admin account"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();",
+              "console.log('🔐 Personal Admin Login Response:', JSON.stringify(response, null, 2));",
+              "console.log('📊 Status Code:', pm.response.code);",
+              "",
+              "if (response.success) {",
+              "    pm.test('✅ Personal admin login successful', function () {",
+              "        pm.response.to.have.status(200);",
+              "        pm.expect(response.success).to.be.true;",
+              "    });",
+              "    ",
+              "    console.log('✅ SUCCESS!');",
+              "    console.log('👤 Admin:', response.data.user.name);",
+              "    console.log('🎭 Role:', response.data.user.role);",
+              "    console.log('📧 Email:', response.data.user.email);",
+              "} else {",
+              "    console.log('❌ Personal admin login failed:', response.message);",
+              "    pm.test('❌ Personal admin login failed', function () {",
+              "        pm.response.to.have.status(401);",
+              "    });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔐 Login - Student (Alice Smith)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"alice.smith@student.com\",\n  \"password\": \"student123\"\n}"
+        },
+        "url": {
+          "raw": "{{render_url}}/auth/login",
+          "host": ["{{render_url}}"],
+          "path": ["auth", "login"]
+        },
+        "description": "Test login with seeder student credentials"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();",
+              "console.log('🔐 Student Login Response:', JSON.stringify(response, null, 2));",
+              "console.log('📊 Status Code:', pm.response.code);",
+              "",
+              "if (response.success) {",
+              "    pm.test('✅ Student login successful', function () {",
+              "        pm.response.to.have.status(200);",
+              "        pm.expect(response.success).to.be.true;",
+              "        pm.expect(response.data.user.role).to.eql('student');",
+              "    });",
+              "    ",
+              "    console.log('✅ SUCCESS!');",
+              "    console.log('👩‍🎓 Student:', response.data.user.name);",
+              "    console.log('🎭 Role:', response.data.user.role);",
+              "    console.log('📧 Email:', response.data.user.email);",
+              "} else {",
+              "    console.log('❌ Student login failed:', response.message);",
+              "    pm.test('❌ Student login failed', function () {",
+              "        pm.response.to.have.status(401);",
+              "    });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔐 Login - Test Invalid Credentials",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"nonexistent@example.com\",\n  \"password\": \"wrongpassword\"\n}"
+        },
+        "url": {
+          "raw": "{{render_url}}/auth/login",
+          "host": ["{{render_url}}"],
+          "path": ["auth", "login"]
+        },
+        "description": "Test login with invalid credentials to verify error handling"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();",
+              "console.log('🔐 Invalid Login Response:', JSON.stringify(response, null, 2));",
+              "console.log('📊 Status Code:', pm.response.code);",
+              "",
+              "pm.test('❌ Invalid login properly rejected', function () {",
+              "    pm.response.to.have.status(401);",
+              "    pm.expect(response.success).to.be.false;",
+              "    pm.expect(response.message).to.include('Invalid email or password');",
+              "});",
+              "",
+              "console.log('✅ Security test passed - invalid credentials rejected');"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔍 Compare Localhost vs Render",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@classroom.com\",\n  \"password\": \"admin123\"\n}"
+        },
+        "url": {
+          "raw": "{{localhost_url}}/auth/login",
+          "host": ["{{localhost_url}}"],
+          "path": ["auth", "login"]
+        },
+        "description": "Test same credentials on localhost for comparison (change URL to localhost_url)"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();",
+              "console.log('🏠 Localhost Login Response:', JSON.stringify(response, null, 2));",
+              "console.log('📊 Status Code:', pm.response.code);",
+              "",
+              "if (response.success) {",
+              "    pm.test('✅ Localhost login successful', function () {",
+              "        pm.response.to.have.status(200);",
+              "        pm.expect(response.success).to.be.true;",
+              "    });",
+              "    ",
+              "    console.log('✅ LOCALHOST SUCCESS!');",
+              "    console.log('👤 User:', response.data.user.name);",
+              "    console.log('🎭 Role:', response.data.user.role);",
+              "    ",
+              "    // Compare with Render results",
+              "    const renderWorking = pm.globals.get('login_successful');",
+              "    if (renderWorking) {",
+              "        console.log('🎉 BOTH LOCALHOST AND RENDER WORKING!');",
+              "    } else {",
+              "        console.log('⚠️  Localhost works but Render has issues');",
+              "    }",
+              "} else {",
+              "    console.log('❌ Localhost login failed:', response.message);",
+              "    console.log('🔧 Check if local server is running on port 8080');",
+              "}"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// Global pre-request script",
+          "console.log('🚀 Starting request to:', pm.request.url.toString());",
+          "console.log('📅 Timestamp:', new Date().toISOString());"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "exec": [
+          "// Global test script",
+          "console.log('⏱️  Response time:', pm.response.responseTime + 'ms');",
+          "console.log('📦 Response size:', pm.response.responseSize + ' bytes');",
+          "console.log('---');"
+        ]
+      }
+    }
+  ]
+}

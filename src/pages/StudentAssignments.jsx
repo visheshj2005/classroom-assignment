@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { FileText, Clock, CheckCircle, AlertCircle, Calendar, BookOpen, Filter } from 'lucide-react'
+import { FileText, Clock, CheckCircle, AlertCircle, Calendar, BookOpen } from 'lucide-react'
 import Sidebar from '../components/Sidebar'
 
 const StudentAssignments = () => {

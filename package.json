@@ -16,6 +16,9 @@
     "deploy:vercel": "node deploy-frontend-vercel.js",
     "deploy:vercel-manual": "npm run build && vercel --prod",
     "deploy:render": "node deploy-render-backend.js",
+    "deploy:ngrok": "node deploy-ngrok-hybrid.js",
+    "deploy:ngrok-win": "deploy-ngrok-hybrid.bat",
+    "test:ngrok": "node test-ngrok-hybrid.js",
     "verify:deployment": "node verify-deployment.js",
     "test:deployment": "node test-full-deployment.js",
     "test:quick": "node quick-deployment-fix.js",
@@ -67,10 +70,7 @@
     "mongoose": "^8.0.3",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.10",
-    "razorpay": "^2.9.2",
-    "puppeteer": "^21.5.2",
-    "jspdf": "^2.5.1",
-    "html2canvas": "^1.4.1"
+    "razorpay": "^2.9.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

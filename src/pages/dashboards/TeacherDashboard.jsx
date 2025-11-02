@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { BookOpen, Users, FileText, Clock, CheckCircle, AlertTriangle, Plus, Crown, Download } from 'lucide-react'
+import { BookOpen, Users, FileText, Clock, CheckCircle, AlertTriangle, Plus, Crown } from 'lucide-react'
 import Sidebar from '../../components/Sidebar'
 import CreateAssignmentModal from '../../components/CreateAssignmentModal'
 
@@ -53,7 +53,6 @@ const TeacherDashboard = () => {
       let totalAssignments = 0
       let toGrade = 0
       const activityItems = []
-      const classesWithAssignments = []
 
       for (const cls of classesData) {
         try {
@@ -121,26 +120,7 @@ const TeacherDashboard = () => {
     fetchDashboardData() // Refresh data
   }
 
-  const handleDownloadReport = async (assignmentId, assignmentTitle) => {
-    try {
-      const response = await api.get(`/reports/assignments/${assignmentId}/pdf`, {
-        responseType: 'blob'
-      })
 
-      // Create blob link to download
-      const url = window.URL.createObjectURL(new Blob([response.data]))
-      const link = document.createElement('a')
-      link.href = url
-      link.setAttribute('download', `${assignmentTitle.replace(/[^a-zA-Z0-9]/g, '_')}_report.pdf`)
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-      window.URL.revokeObjectURL(url)
-    } catch (error) {
-      console.error('Error downloading report:', error)
-      alert('Failed to download report. Please try again.')
-    }
-  }
 
   const formatTimeAgo = (dateString) => {
     const now = new Date()
@@ -183,7 +163,7 @@ const TeacherDashboard = () => {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       
-      <div className="flex-1 lg:ml-64 p-8">
+      <div className="flex-1 lg:ml-72 p-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">

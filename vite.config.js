@@ -20,9 +20,14 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true
+        target: process.env.VITE_API_URL || 'http://localhost:5000',
+        changeOrigin: true,
+        secure: true,
+        headers: {
+          'ngrok-skip-browser-warning': 'true'
+        }
       }
-    }
+    },
+    allowedHosts: ['.ngrok-free.dev', '.ngrok.io'] // ✅ allow any ngrok subdomain
   }
 })

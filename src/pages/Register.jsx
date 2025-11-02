@@ -220,7 +220,7 @@ const Register = () => {
                       id="name"
                       name="name"
                       type="text"
-                      autoComplete="name"
+                      autoComplete="off"
                       required
                       value={formData.name}
                       onChange={handleChange}
@@ -244,7 +244,7 @@ const Register = () => {
                       id="email"
                       name="email"
                       type="email"
-                      autoComplete="email"
+                      autoComplete="off"
                       required
                       value={formData.email}
                       onChange={handleChange}
@@ -268,7 +268,7 @@ const Register = () => {
                       id="password"
                       name="password"
                       type={showPassword ? 'text' : 'password'}
-                      autoComplete="new-password"
+                      autoComplete="off"
                       required
                       value={formData.password}
                       onChange={handleChange}
@@ -303,7 +303,7 @@ const Register = () => {
                       id="confirmPassword"
                       name="confirmPassword"
                       type={showConfirmPassword ? 'text' : 'password'}
-                      autoComplete="new-password"
+                      autoComplete="off"
                       required
                       value={formData.confirmPassword}
                       onChange={handleChange}
@@ -366,6 +366,7 @@ const Register = () => {
                       name="otp"
                       type="text"
                       maxLength="6"
+                      autoComplete="off"
                       required
                       value={formData.otp}
                       onChange={handleChange}

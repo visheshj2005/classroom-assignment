@@ -13,8 +13,7 @@ import {
   Send,
   Edit,
   Trash2,
-  ArrowLeft,
-  Download
+  ArrowLeft
 } from 'lucide-react'
 
 const AssignmentDetail = () => {
@@ -112,26 +111,7 @@ const AssignmentDetail = () => {
     }
   }
 
-  const handleDownloadReport = async () => {
-    try {
-      const response = await api.get(`/reports/assignments/${assignmentId}/pdf`, {
-        responseType: 'blob'
-      })
 
-      // Create blob link to download
-      const url = window.URL.createObjectURL(new Blob([response.data]))
-      const link = document.createElement('a')
-      link.href = url
-      link.setAttribute('download', `${assignment.title.replace(/[^a-zA-Z0-9]/g, '_')}_report.pdf`)
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-      window.URL.revokeObjectURL(url)
-    } catch (error) {
-      console.error('Error downloading report:', error)
-      alert('Failed to download report. Please try again.')
-    }
-  }
 
   const formatDate = (dateString) => {
     const date = new Date(dateString)
@@ -145,7 +125,7 @@ const AssignmentDetail = () => {
     return (
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
-        <div className="flex-1 lg:ml-64 p-8">
+        <div className="flex-1 lg:ml-72 p-8">
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
           </div>
@@ -158,7 +138,7 @@ const AssignmentDetail = () => {
     return (
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
-        <div className="flex-1 lg:ml-64 p-8">
+        <div className="flex-1 lg:ml-72 p-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <h1 className="text-2xl font-bold text-gray-900">Assignment Not Found</h1>
@@ -179,7 +159,7 @@ const AssignmentDetail = () => {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
 
-      <div className="flex-1 lg:ml-64 p-8">
+      <div className="flex-1 lg:ml-72 p-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -198,15 +178,7 @@ const AssignmentDetail = () => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              {user?.role === 'teacher' && (
-                <button
-                  onClick={handleDownloadReport}
-                  className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Download Report
-                </button>
-              )}
+
               {isOverdue && (
                 <span className="px-3 py-1 text-sm font-medium bg-red-100 text-red-800 rounded-full">
                   Overdue
@@ -395,6 +367,7 @@ const AssignmentDetail = () => {
                   </label>
                   <input
                     type="url"
+                    autoComplete="off"
                     value={submissionData.url}
                     onChange={(e) => setSubmissionData(prev => ({ ...prev, url: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"

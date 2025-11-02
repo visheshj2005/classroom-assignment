@@ -167,6 +167,7 @@ const UserManagement = () => {
                 <Search className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" />
                 <input
                   type="text"
+                  autoComplete="off"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -295,6 +296,7 @@ const UserManagement = () => {
                   </label>
                   <input
                     type="text"
+                    autoComplete="off"
                     value={newUser.name}
                     onChange={(e) => setNewUser(prev => ({ ...prev, name: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -308,6 +310,7 @@ const UserManagement = () => {
                   </label>
                   <input
                     type="email"
+                    autoComplete="off"
                     value={newUser.email}
                     onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -321,6 +324,7 @@ const UserManagement = () => {
                   </label>
                   <input
                     type="password"
+                    autoComplete="off"
                     value={newUser.password}
                     onChange={(e) => setNewUser(prev => ({ ...prev, password: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -395,6 +399,7 @@ const UserManagement = () => {
                   <input
                     name="name"
                     type="text"
+                    autoComplete="off"
                     defaultValue={editingUser.name}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     required
@@ -408,6 +413,7 @@ const UserManagement = () => {
                   <input
                     name="email"
                     type="email"
+                    autoComplete="off"
                     defaultValue={editingUser.email}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     required
@@ -436,6 +442,7 @@ const UserManagement = () => {
                   <input
                     name="password"
                     type="password"
+                    autoComplete="off"
                     placeholder="Leave blank to keep current password"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     minLength={6}

@@ -133,6 +133,7 @@ const GradeSubmissionModal = ({ isOpen, onClose, submission, onSuccess }) => {
                   min="0"
                   max={gradeData.maxScore}
                   step="0.1"
+                  autoComplete="off"
                   value={gradeData.score}
                   onChange={(e) => setGradeData(prev => ({ ...prev, score: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -147,6 +148,7 @@ const GradeSubmissionModal = ({ isOpen, onClose, submission, onSuccess }) => {
                   type="number"
                   min="1"
                   step="0.1"
+                  autoComplete="off"
                   value={gradeData.maxScore}
                   onChange={(e) => setGradeData(prev => ({ ...prev, maxScore: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"

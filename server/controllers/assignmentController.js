@@ -82,10 +82,36 @@ export const getClassAssignments = async (req, res) => {
 
     const total = await Assignment.countDocuments(filter)
 
+    // If user is a student, get their submissions for these assignments
+    let assignmentsWithSubmissions = assignments
+    if (req.user.role === 'student') {
+      const assignmentIds = assignments.map(a => a._id)
+      const submissions = await Submission.find({
+        assignmentId: { $in: assignmentIds },
+        studentId: req.user._id
+      })
+
+      // Create a map of submissions by assignment ID
+      const submissionMap = {}
+      submissions.forEach(sub => {
+        submissionMap[sub.assignmentId.toString()] = sub
+      })
+
+      // Add mySubmission to each assignment
+      assignmentsWithSubmissions = assignments.map(assignment => {
+        const assignmentData = assignment.toObject()
+        const submission = submissionMap[assignment._id.toString()]
+        if (submission) {
+          assignmentData.mySubmission = submission
+        }
+        return assignmentData
+      })
+    }
+
     res.json({
       success: true,
       data: {
-        assignments,
+        assignments: assignmentsWithSubmissions,
         pagination: {
           page: parseInt(page),
           limit: parseInt(limit),

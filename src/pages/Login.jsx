@@ -110,7 +110,7 @@ const Login = () => {
                                     id="email"
                                     name="email"
                                     type="email"
-                                    autoComplete="email"
+                                    autoComplete="off"
                                     required
                                     value={formData.email}
                                     onChange={handleChange}
@@ -129,7 +129,7 @@ const Login = () => {
                                     id="password"
                                     name="password"
                                     type={showPassword ? 'text' : 'password'}
-                                    autoComplete="current-password"
+                                    autoComplete="off"
                                     required
                                     value={formData.password}
                                     onChange={handleChange}

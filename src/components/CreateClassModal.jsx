@@ -148,6 +148,7 @@ const CreateClassModal = ({ isOpen, onClose, onClassCreated }) => {
                 type="text"
                 id="title"
                 name="title"
+                autoComplete="off"
                 value={formData.title}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -165,6 +166,7 @@ const CreateClassModal = ({ isOpen, onClose, onClassCreated }) => {
                 type="text"
                 id="subject"
                 name="subject"
+                autoComplete="off"
                 value={formData.subject}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"

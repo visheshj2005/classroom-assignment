@@ -83,6 +83,7 @@ const CreateAssignmentModal = ({ isOpen, onClose, classId, onSuccess }) => {
                 type="text"
                 id="title"
                 name="title"
+                autoComplete="off"
                 value={formData.title}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -131,6 +132,7 @@ const CreateAssignmentModal = ({ isOpen, onClose, classId, onSuccess }) => {
                   type="datetime-local"
                   id="dueAt"
                   name="dueAt"
+                  autoComplete="off"
                   value={formData.dueAt}
                   onChange={handleChange}
                   min={minDate}
@@ -146,6 +148,7 @@ const CreateAssignmentModal = ({ isOpen, onClose, classId, onSuccess }) => {
                   type="number"
                   id="maxScore"
                   name="maxScore"
+                  autoComplete="off"
                   value={formData.maxScore}
                   onChange={handleChange}
                   min={1}

@@ -110,7 +110,7 @@ const Subscription = () => {
     return (
       <div className="flex">
         <Sidebar />
-        <div className="flex-1 lg:ml-64 p-8">
+        <div className="flex-1 lg:ml-72 p-8">
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
           </div>
@@ -126,7 +126,7 @@ const Subscription = () => {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       
-      <div className="flex-1 lg:ml-64 p-8">
+      <div className="flex-1 lg:ml-72 p-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Subscription Management</h1>

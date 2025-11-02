@@ -145,6 +145,7 @@ const ResetPassword = () => {
                   id="newPassword"
                   name="newPassword"
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete="off"
                   required
                   value={formData.newPassword}
                   onChange={handleChange}
@@ -175,6 +176,7 @@ const ResetPassword = () => {
                   id="confirmPassword"
                   name="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
+                  autoComplete="off"
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}

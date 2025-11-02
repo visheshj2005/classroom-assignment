@@ -19,7 +19,7 @@ export const SUBSCRIPTION_LIMITS = {
     maxClasses: -1, // unlimited
     name: 'Premium',
     price: 10, // in INR
-    features: ['Unlimited Classes', 'Priority Support', 'Advanced Analytics', 'PDF Reports']
+    features: ['Unlimited Classes', 'Priority Support', 'Advanced Analytics']
   }
 }
 

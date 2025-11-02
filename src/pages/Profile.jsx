@@ -168,7 +168,7 @@ const Profile = () => {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       
-      <div className="flex-1 lg:ml-64 p-8">
+      <div className="flex-1 lg:ml-72 p-8">
         {/* Header */}
       <div className="bg-white shadow">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -318,6 +318,7 @@ const Profile = () => {
                       <div className="relative">
                         <input
                           type={showCurrentPassword ? 'text' : 'password'}
+                          autoComplete="off"
                           value={passwordData.currentPassword}
                           onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
                           className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -344,6 +345,7 @@ const Profile = () => {
                       <div className="relative">
                         <input
                           type={showNewPassword ? 'text' : 'password'}
+                          autoComplete="off"
                           value={passwordData.newPassword}
                           onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
                           className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -371,6 +373,7 @@ const Profile = () => {
                       <div className="relative">
                         <input
                           type={showConfirmPassword ? 'text' : 'password'}
+                          autoComplete="off"
                           value={passwordData.confirmPassword}
                           onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                           className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"

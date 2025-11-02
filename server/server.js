@@ -20,7 +20,6 @@ import notificationRoutes from './routes/notifications.js'
 import analyticsRoutes from './routes/analytics.js'
 import uploadRoutes from './routes/uploads.js'
 import paymentRoutes from './routes/payments.js'
-// import reportRoutes from './routes/reports.js'
 
 // Import services (simplified for now)
 
@@ -97,7 +96,7 @@ if (isProduction) {
   app.use(limiter)
 }
 
-// CORS configuration - Updated for production
+// CORS configuration - Updated for ngrok + Vercel hybrid deployment
 const allowedOrigins = [
   // Development origins
   'http://localhost:5173',
@@ -113,7 +112,9 @@ const allowedOrigins = [
   'https://classroom-assignment-pqcj.vercel.app', // Your current Vercel URL
   // Additional Vercel preview URLs
   'https://classroom-assignment-pqcj-git-main-visheshj2005s-projects.vercel.app',
-  'https://classroom-assignment-pqcj-visheshj2005s-projects.vercel.app'
+  'https://classroom-assignment-pqcj-visheshj2005s-projects.vercel.app',
+  // Ngrok domains for hybrid deployment
+  'https://paronymous-jacki-gelatinously.ngrok-free.dev'
 ].filter(Boolean)
 
 console.log('🌐 Allowed CORS Origins:', allowedOrigins)
@@ -128,12 +129,14 @@ app.use(cors({
     // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true)
     
-    // Allow all Vercel domains and localhost
+    // Allow all Vercel domains, localhost, and ngrok domains
     if (!origin || 
         allowedOrigins.includes(origin) || 
         origin.includes('vercel.app') || 
         origin.includes('localhost') ||
-        origin.includes('127.0.0.1')) {
+        origin.includes('127.0.0.1') ||
+        origin.includes('ngrok-free.dev') ||
+        origin.includes('ngrok.io')) {
       return callback(null, true)
     }
     
@@ -141,7 +144,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'ngrok-skip-browser-warning'],
   optionsSuccessStatus: 200
 }))
 
@@ -224,7 +227,6 @@ app.use('/api/notifications', notificationRoutes)
 app.use('/api/analytics', analyticsRoutes)
 app.use('/api/uploads', uploadRoutes)
 app.use('/api/payments', paymentRoutes)
-// app.use('/api/reports', reportRoutes)
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

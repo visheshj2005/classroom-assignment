@@ -159,6 +159,7 @@ const ClassSettings = () => {
                   </label>
                   <input
                     type="text"
+                    autoComplete="off"
                     value={formData.title}
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -172,6 +173,7 @@ const ClassSettings = () => {
                   </label>
                   <input
                     type="text"
+                    autoComplete="off"
                     value={formData.subject}
                     onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"

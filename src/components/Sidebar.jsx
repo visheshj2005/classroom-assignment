@@ -87,7 +87,7 @@ const Sidebar = () => {
       )}
 
       {/* Sidebar - Always visible on desktop, toggleable on mobile */}
-      <div className={`fixed left-0 top-0 h-full bg-white shadow-lg z-50 transition-transform duration-300 w-64 ${
+      <div className={`fixed left-4 top-4 bottom-4 bg-white shadow-lg z-50 transition-transform duration-300 w-64 rounded-2xl ${
         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
         {/* Header */}

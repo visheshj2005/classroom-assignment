@@ -1,0 +1,308 @@
+{
+  "info": {
+    "name": "Classroom Assignment - Debug Login",
+    "description": "Debug collection to test login functionality and identify database issues",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://classroom-assignment-50uu.onrender.com/api",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": ["{{base_url}}"],
+          "path": ["health"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Health check successful', function () {",
+              "    pm.response.to.have.status(200);",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.success).to.be.true;",
+              "    console.log('Database status:', response.database);",
+              "    console.log('Environment:', response.environment);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Test API Endpoint",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/test",
+          "host": ["{{base_url}}"],
+          "path": ["test"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Test endpoint accessible', function () {",
+              "    pm.response.to.have.status(200);",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.success).to.be.true;",
+              "    console.log('API Response:', response.message);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Login - admin@example.com",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();",
+              "console.log('Login Response:', JSON.stringify(response, null, 2));",
+              "console.log('Status Code:', pm.response.code);",
+              "",
+              "if (response.success) {",
+              "    pm.test('Login successful', function () {",
+              "        pm.response.to.have.status(200);",
+              "        pm.expect(response.success).to.be.true;",
+              "    });",
+              "    console.log('User:', response.data.user.name);",
+              "    console.log('Role:', response.data.user.role);",
+              "} else {",
+              "    console.log('Login failed:', response.message);",
+              "    pm.test('Login failed as expected', function () {",
+              "        pm.response.to.have.status(401);",
+              "    });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Login - viditj47@gmail.com",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"viditj47@gmail.com\",\n  \"password\": \"Visheshjain18@\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();",
+              "console.log('Login Response:', JSON.stringify(response, null, 2));",
+              "console.log('Status Code:', pm.response.code);",
+              "",
+              "if (response.success) {",
+              "    pm.test('Login successful', function () {",
+              "        pm.response.to.have.status(200);",
+              "        pm.expect(response.success).to.be.true;",
+              "    });",
+              "    console.log('User:', response.data.user.name);",
+              "    console.log('Role:', response.data.user.role);",
+              "} else {",
+              "    console.log('Login failed:', response.message);",
+              "    pm.test('Login failed as expected', function () {",
+              "        pm.response.to.have.status(401);",
+              "    });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Login - admin@classroom.com",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@classroom.com\",\n  \"password\": \"admin123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();",
+              "console.log('Login Response:', JSON.stringify(response, null, 2));",
+              "console.log('Status Code:', pm.response.code);",
+              "",
+              "if (response.success) {",
+              "    pm.test('Login successful', function () {",
+              "        pm.response.to.have.status(200);",
+              "        pm.expect(response.success).to.be.true;",
+              "    });",
+              "    console.log('User:', response.data.user.name);",
+              "    console.log('Role:', response.data.user.role);",
+              "} else {",
+              "    console.log('Login failed:', response.message);",
+              "    pm.test('Login failed as expected', function () {",
+              "        pm.response.to.have.status(401);",
+              "    });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Login - sarah.johnson@classroom.com",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"sarah.johnson@classroom.com\",\n  \"password\": \"teacher123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();",
+              "console.log('Login Response:', JSON.stringify(response, null, 2));",
+              "console.log('Status Code:', pm.response.code);",
+              "",
+              "if (response.success) {",
+              "    pm.test('Login successful', function () {",
+              "        pm.response.to.have.status(200);",
+              "        pm.expect(response.success).to.be.true;",
+              "    });",
+              "    console.log('User:', response.data.user.name);",
+              "    console.log('Role:', response.data.user.role);",
+              "} else {",
+              "    console.log('Login failed:', response.message);",
+              "    pm.test('Login failed as expected', function () {",
+              "        pm.response.to.have.status(401);",
+              "    });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Login - Test Different Passwords",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"REPLACE_WITH_EXISTING_EMAIL\",\n  \"password\": \"REPLACE_WITH_PASSWORD\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Use this request to test different email/password combinations",
+              "// Replace the email and password in the body with actual values from your database",
+              "const response = pm.response.json();",
+              "console.log('Login Response:', JSON.stringify(response, null, 2));",
+              "console.log('Status Code:', pm.response.code);",
+              "",
+              "if (response.success) {",
+              "    pm.test('Login successful', function () {",
+              "        pm.response.to.have.status(200);",
+              "        pm.expect(response.success).to.be.true;",
+              "    });",
+              "    console.log('✅ SUCCESS! User:', response.data.user.name);",
+              "    console.log('✅ Role:', response.data.user.role);",
+              "} else {",
+              "    console.log('❌ Login failed:', response.message);",
+              "    pm.test('Login failed', function () {",
+              "        pm.response.to.have.status(401);",
+              "    });",
+              "}"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
