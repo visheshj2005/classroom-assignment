@@ -21,10 +21,10 @@ const LandingPage = () => {
                                 <a href="#features" className="text-gray-600 hover:text-indigo-600 px-3 py-2 text-sm font-medium transition-colors">
                                     Features
                                 </a>
-                                <a href="#teachers" className="text-gray-600 hover:text-indigo-600 px-3 py-2 text-sm font-medium transition-colors">
+                                <a href="/for-teachers" className="text-gray-600 hover:text-indigo-600 px-3 py-2 text-sm font-medium transition-colors">
                                     For Teachers
                                 </a>
-                                <a href="#students" className="text-gray-600 hover:text-indigo-600 px-3 py-2 text-sm font-medium transition-colors">
+                                <a href="/for-students" className="text-gray-600 hover:text-indigo-600 px-3 py-2 text-sm font-medium transition-colors">
                                     For Students
                                 </a>
                             </div>
@@ -222,12 +222,12 @@ const LandingPage = () => {
                             </h3>
                             <ul className="space-y-2">
                                 <li>
-                                    <a href="#" className="text-gray-600 hover:text-indigo-600 transition-colors">
+                                    <a href="/privacy-policy" className="text-gray-600 hover:text-indigo-600 transition-colors">
                                         Privacy Policy
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#" className="text-gray-600 hover:text-indigo-600 transition-colors">
+                                    <a href="/terms-of-service" className="text-gray-600 hover:text-indigo-600 transition-colors">
                                         Terms of Service
                                     </a>
                                 </li>
@@ -240,12 +240,12 @@ const LandingPage = () => {
                             </h3>
                             <ul className="space-y-2">
                                 <li>
-                                    <a href="#" className="text-gray-600 hover:text-indigo-600 transition-colors">
+                                    <a href="/contact" className="text-gray-600 hover:text-indigo-600 transition-colors">
                                         Contact
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#" className="text-gray-600 hover:text-indigo-600 transition-colors">
+                                    <a href="/help-center" className="text-gray-600 hover:text-indigo-600 transition-colors">
                                         Help Center
                                     </a>
                                 </li>

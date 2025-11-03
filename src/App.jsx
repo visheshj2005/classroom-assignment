@@ -21,6 +21,14 @@ import StudentClasses from './pages/StudentClasses'
 import StudentAssignments from './pages/StudentAssignments'
 import Unauthorized from './pages/Unauthorized'
 
+// New public pages
+import ForTeachers from './pages/ForTeachers'
+import ForStudents from './pages/ForStudents'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsOfService from './pages/TermsOfService'
+import Contact from './pages/Contact'
+import HelpCenter from './pages/HelpCenter'
+
 // Layout wrapper to handle authenticated vs unauthenticated routing
 const AppRoutes = () => {
   const { isAuthenticated } = useAuth()
@@ -48,6 +56,14 @@ const AppRoutes = () => {
         path="/reset-password" 
         element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <ResetPassword />} 
       />
+      
+      {/* New public pages */}
+      <Route path="/for-teachers" element={<ForTeachers />} />
+      <Route path="/for-students" element={<ForStudents />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms-of-service" element={<TermsOfService />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/help-center" element={<HelpCenter />} />
       
       {/* Protected routes */}
       <Route 

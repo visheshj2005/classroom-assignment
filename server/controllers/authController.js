@@ -350,11 +350,12 @@ export const forgotPassword = async (req, res) => {
     const { email } = req.body
 
     const user = await User.findOne({ email })
+    
     if (!user) {
-      // Don't reveal if user exists or not for security
-      return res.json({
-        success: true,
-        message: 'If an account with that email exists, a password reset link has been sent.'
+      // User doesn't exist - return clear error message
+      return res.status(404).json({
+        success: false,
+        message: 'No account found with this email address. Please check your email or register for a new account.'
       })
     }
 
@@ -399,7 +400,7 @@ export const forgotPassword = async (req, res) => {
       
       res.json({
         success: true,
-        message: 'If an account with that email exists, a password reset link has been sent.'
+        message: 'Password reset link has been sent to your email address. Please check your inbox and follow the instructions.'
       })
     } catch (emailError) {
       console.error('Email sending error:', emailError)
