@@ -12,11 +12,11 @@ services:
       - key: PORT
         value: 10000
       - key: CLIENT_URL
-        value: https://classroom-assignment-pqcj.vercel.app
+        value: https://gradely.site
       - key: FRONTEND_URL
-        value: https://classroom-assignment-pqcj.vercel.app
+        value: https://gradely.site
       - key: CORS_ORIGIN
-        value: https://classroom-assignment-pqcj.vercel.app
+        value: https://gradely.site
       - key: BCRYPT_ROUNDS
         value: 12
       - key: JWT_EXPIRES_IN

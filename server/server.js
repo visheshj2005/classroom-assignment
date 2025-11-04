@@ -109,7 +109,7 @@ const allowedOrigins = [
   process.env.CLIENT_URL,
   process.env.FRONTEND_URL,
   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
-  'https://classroom-assignment-pqcj.vercel.app', // Your current Vercel URL
+  'https://gradely.site', // Your current Vercel URL
   // Additional Vercel preview URLs
   'https://classroom-assignment-pqcj-git-main-visheshj2005s-projects.vercel.app',
   'https://classroom-assignment-pqcj-visheshj2005s-projects.vercel.app',
@@ -133,7 +133,7 @@ app.use((req, res, next) => {
   } else {
     // Production: check against allowed origins
     if (!origin) {
-      allowedOrigin = 'https://classroom-assignment-pqcj.vercel.app'
+      allowedOrigin = 'https://gradely.site'
     } else if (
       allowedOrigins.includes(origin) ||
       origin.includes('vercel.app') ||
