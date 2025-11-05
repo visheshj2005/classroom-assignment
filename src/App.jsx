@@ -36,27 +36,27 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* Public routes */}
-      <Route 
-        path="/" 
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />} 
+      <Route
+        path="/"
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />}
       />
-      <Route 
-        path="/login" 
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} 
+      <Route
+        path="/login"
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />}
       />
-      <Route 
-        path="/register" 
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />} 
+      <Route
+        path="/register"
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />}
       />
-      <Route 
-        path="/forgot-password" 
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <ForgotPassword />} 
+      <Route
+        path="/forgot-password"
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <ForgotPassword />}
       />
-      <Route 
-        path="/reset-password" 
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <ResetPassword />} 
+      <Route
+        path="/reset-password"
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <ResetPassword />}
       />
-      
+
       {/* New public pages */}
       <Route path="/for-teachers" element={<ForTeachers />} />
       <Route path="/for-students" element={<ForStudents />} />
@@ -64,58 +64,58 @@ const AppRoutes = () => {
       <Route path="/terms-of-service" element={<TermsOfService />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/help-center" element={<HelpCenter />} />
-      
+
       {/* Protected routes */}
-      <Route 
-        path="/dashboard" 
+      <Route
+        path="/dashboard"
         element={
           <PrivateRoute>
             <Dashboard />
           </PrivateRoute>
-        } 
+        }
       />
-      
+
       {/* Profile route */}
-      <Route 
-        path="/profile" 
+      <Route
+        path="/profile"
         element={
           <PrivateRoute>
             <Profile />
           </PrivateRoute>
-        } 
+        }
       />
-      
+
       {/* Assignment detail route */}
-      <Route 
-        path="/assignments/:assignmentId" 
+      <Route
+        path="/assignments/:assignmentId"
         element={
           <PrivateRoute>
             <AssignmentDetail />
           </PrivateRoute>
-        } 
+        }
       />
-      
+
       {/* Assignment management route (for teachers) */}
-      <Route 
-        path="/assignments/:assignmentId/manage" 
+      <Route
+        path="/assignments/:assignmentId/manage"
         element={
           <PrivateRoute roles={['teacher', 'admin']}>
             <AssignmentManagement />
           </PrivateRoute>
-        } 
+        }
       />
-      
+
       {/* Admin routes */}
-      <Route 
-        path="/admin/users" 
+      <Route
+        path="/admin/users"
         element={
           <PrivateRoute roles={['admin']}>
             <UserManagement />
           </PrivateRoute>
-        } 
+        }
       />
-      <Route 
-        path="/admin/*" 
+      <Route
+        path="/admin/*"
         element={
           <PrivateRoute roles={['admin']}>
             <div className="p-8 text-center">
@@ -123,55 +123,55 @@ const AppRoutes = () => {
               <p className="text-gray-600">More admin features coming soon...</p>
             </div>
           </PrivateRoute>
-        } 
+        }
       />
-      
+
       {/* Teacher routes */}
-      <Route 
-        path="/subscription" 
+      <Route
+        path="/subscription"
         element={
           <PrivateRoute roles={['teacher']}>
             <Subscription />
           </PrivateRoute>
-        } 
+        }
       />
-      
+
       {/* Class routes - accessible by both teachers and students */}
-      <Route 
-        path="/classes" 
+      <Route
+        path="/classes"
         element={
           <PrivateRoute>
             <ClassManagement />
           </PrivateRoute>
-        } 
+        }
       />
-      <Route 
-        path="/classes/:classId" 
+      <Route
+        path="/classes/:classId"
         element={
           <PrivateRoute>
             <ClassDetail />
           </PrivateRoute>
-        } 
+        }
       />
-      <Route 
-        path="/classes/:classId/settings" 
+      <Route
+        path="/classes/:classId/settings"
         element={
           <PrivateRoute roles={['teacher', 'admin']}>
             <ClassSettings />
           </PrivateRoute>
-        } 
+        }
       />
-      
+
       {/* Assignment routes */}
-      <Route 
-        path="/assignments" 
+      <Route
+        path="/assignments"
         element={
           <PrivateRoute>
             <StudentAssignments />
           </PrivateRoute>
-        } 
+        }
       />
-      
+
       {/* Error pages */}
       <Route path="/unauthorized" element={<Unauthorized />} />
       <Route path="*" element={<Navigate to="/" replace />} />
