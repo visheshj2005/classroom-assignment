@@ -32,7 +32,7 @@ import HelpCenter from './pages/HelpCenter'
 // Layout wrapper to handle authenticated vs unauthenticated routing
 const AppRoutes = () => {
   const { isAuthenticated } = useAuth()
-
+  
   return (
     <Routes>
       {/* Public routes */}
