@@ -10,7 +10,7 @@ const ForTeachers = () => {
                         <div className="flex items-center">
                             <BookOpen className="h-8 w-8 text-indigo-600" />
                             <a href="/" className="ml-2 text-xl font-semibold text-gray-900">
-                                Classroom Assignment Portal
+                                Gradely
                             </a>
                         </div>
                         <div className="flex items-center space-x-4">
@@ -128,7 +128,7 @@ const ForTeachers = () => {
                         <div className="flex items-center justify-center mb-4">
                             <BookOpen className="h-8 w-8 text-indigo-600" />
                             <span className="ml-2 text-xl font-semibold text-gray-900">
-                                Classroom Assignment Portal
+                                Gradely
                             </span>
                         </div>
                         <div className="flex justify-center space-x-6 text-sm">
@@ -138,7 +138,7 @@ const ForTeachers = () => {
                             <a href="/help-center" className="text-gray-600 hover:text-indigo-600">Help Center</a>
                         </div>
                         <p className="text-center text-gray-500 text-sm mt-4">
-                            © 2025 Classroom Assignment Portal. All rights reserved.
+                            © 2025 Gradely. All rights reserved.
                         </p>
                     </div>
                 </div>

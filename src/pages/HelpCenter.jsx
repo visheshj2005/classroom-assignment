@@ -80,7 +80,7 @@ const HelpCenter = () => {
                         <div className="flex items-center">
                             <BookOpen className="h-8 w-8 text-indigo-600" />
                             <a href="/" className="ml-2 text-xl font-semibold text-gray-900">
-                                Classroom Assignment Portal
+                                Gradely
                             </a>
                         </div>
                         <div className="flex items-center space-x-4">
@@ -196,7 +196,7 @@ const HelpCenter = () => {
                             Contact Support
                         </a>
                         <a
-                            href="mailto:support@classroomportal.com"
+                            href="mailto:support@gradely.site"
                             className="inline-block border border-indigo-600 text-indigo-600 hover:bg-indigo-50 px-8 py-4 rounded-lg text-lg font-semibold transition-colors"
                         >
                             Email Us
@@ -212,7 +212,7 @@ const HelpCenter = () => {
                         <div className="flex items-center justify-center mb-4">
                             <BookOpen className="h-8 w-8 text-indigo-600" />
                             <span className="ml-2 text-xl font-semibold text-gray-900">
-                                Classroom Assignment Portal
+                                Gradely
                             </span>
                         </div>
                         <div className="flex justify-center space-x-6 text-sm">
@@ -222,7 +222,7 @@ const HelpCenter = () => {
                             <a href="/help-center" className="text-indigo-600 font-medium">Help Center</a>
                         </div>
                         <p className="text-center text-gray-500 text-sm mt-4">
-                            © 2025 Classroom Assignment Portal. All rights reserved.
+                            © 2025 Gradely. All rights reserved.
                         </p>
                     </div>
                 </div>

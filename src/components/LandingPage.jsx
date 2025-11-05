@@ -11,7 +11,7 @@ const LandingPage = () => {
                         <div className="flex items-center">
                             <BookOpen className="h-8 w-8 text-indigo-600" />
                             <span className="ml-2 text-xl font-semibold text-gray-900">
-                                Classroom Assignment Portal
+                                Gradely
                             </span>
                         </div>
 
@@ -208,7 +208,7 @@ const LandingPage = () => {
                             <div className="flex items-center mb-4">
                                 <BookOpen className="h-8 w-8 text-indigo-600" />
                                 <span className="ml-2 text-xl font-semibold text-gray-900">
-                                    Classroom Assignment Portal
+                                    Gradely
                                 </span>
                             </div>
                             <p className="text-gray-600 max-w-md">
@@ -255,7 +255,7 @@ const LandingPage = () => {
 
                     <div className="border-t border-gray-200 mt-8 pt-8">
                         <p className="text-center text-gray-500 text-sm">
-                            © 2025 Classroom Assignment Portal. All rights reserved.
+                            © 2025 Gradely. All rights reserved.
                         </p>
                     </div>
                 </div>

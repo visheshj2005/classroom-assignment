@@ -10,7 +10,7 @@ const Contact = () => {
                         <div className="flex items-center">
                             <BookOpen className="h-8 w-8 text-indigo-600" />
                             <a href="/" className="ml-2 text-xl font-semibold text-gray-900">
-                                Classroom Assignment Portal
+                                Gradely
                             </a>
                         </div>
                         <div className="flex items-center space-x-4">
@@ -156,7 +156,7 @@ const Contact = () => {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-gray-900 mb-1">Email Support</h3>
-                                        <p className="text-gray-600">support@classroomportal.com</p>
+                                        <p className="text-gray-600">support@gradely.site</p>
                                         <p className="text-sm text-gray-500">We typically respond within 24 hours</p>
                                     </div>
                                 </div>
@@ -167,8 +167,8 @@ const Contact = () => {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-gray-900 mb-1">Phone Support</h3>
-                                        <p className="text-gray-600">+1 (555) 123-4567</p>
-                                        <p className="text-sm text-gray-500">Monday - Friday, 9 AM - 6 PM EST</p>
+                                        <p className="text-gray-600">+91 9664049426</p>
+                                        <p className="text-sm text-gray-500">Monday - Friday, 9 AM - 6 PM IST</p>
                                     </div>
                                 </div>
 
@@ -179,9 +179,9 @@ const Contact = () => {
                                     <div>
                                         <h3 className="font-semibold text-gray-900 mb-1">Office Address</h3>
                                         <p className="text-gray-600">
-                                            123 Education Street<br />
-                                            Suite 456<br />
-                                            Learning City, LC 12345
+                                            304. Diamond Plaza<br />
+                                             Hiran Magri Sector - 5<br />
+                                            Udaipur, Rajasthan 313002
                                         </p>
                                     </div>
                                 </div>
@@ -193,9 +193,8 @@ const Contact = () => {
                                     <div>
                                         <h3 className="font-semibold text-gray-900 mb-1">Business Hours</h3>
                                         <p className="text-gray-600">
-                                            Monday - Friday: 9:00 AM - 6:00 PM EST<br />
-                                            Saturday: 10:00 AM - 4:00 PM EST<br />
-                                            Sunday: Closed
+                                            Monday - Friday: 9:00 AM - 6:00 PM IST<br />
+                                            Saturday & Sunday: Closed
                                         </p>
                                     </div>
                                 </div>
@@ -223,7 +222,7 @@ const Contact = () => {
                         <div className="flex items-center justify-center mb-4">
                             <BookOpen className="h-8 w-8 text-indigo-600" />
                             <span className="ml-2 text-xl font-semibold text-gray-900">
-                                Classroom Assignment Portal
+                                Gradely
                             </span>
                         </div>
                         <div className="flex justify-center space-x-6 text-sm">
@@ -233,7 +232,7 @@ const Contact = () => {
                             <a href="/help-center" className="text-gray-600 hover:text-indigo-600">Help Center</a>
                         </div>
                         <p className="text-center text-gray-500 text-sm mt-4">
-                            © 2025 Classroom Assignment Portal. All rights reserved.
+                            © 2025 Gradely. All rights reserved.
                         </p>
                     </div>
                 </div>

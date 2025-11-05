@@ -97,7 +97,7 @@ const Sidebar = () => {
               <BookOpen className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-gray-900">Classroom</h1>
+              <h1 className="text-lg font-semibold text-gray-900">Gradely</h1>
               <p className="text-xs text-gray-500">Assignment Portal</p>
             </div>
           </div>

@@ -10,7 +10,7 @@ const TermsOfService = () => {
                         <div className="flex items-center">
                             <BookOpen className="h-8 w-8 text-indigo-600" />
                             <a href="/" className="ml-2 text-xl font-semibold text-gray-900">
-                                Classroom Assignment Portal
+                                Gradely
                             </a>
                         </div>
                         <div className="flex items-center space-x-4">
@@ -38,7 +38,7 @@ const TermsOfService = () => {
                         <section>
                             <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Acceptance of Terms</h2>
                             <p className="text-gray-700">
-                                By accessing and using the Classroom Assignment Portal, you accept and agree to be bound 
+                                By accessing and using the Gradely, you accept and agree to be bound 
                                 by the terms and provision of this agreement. If you do not agree to abide by the above, 
                                 please do not use this service.
                             </p>
@@ -47,7 +47,7 @@ const TermsOfService = () => {
                         <section>
                             <h2 className="text-2xl font-semibold text-gray-900 mb-4">2. Use License</h2>
                             <p className="text-gray-700 mb-4">
-                                Permission is granted to temporarily use the Classroom Assignment Portal for personal, 
+                                Permission is granted to temporarily use the Gradely for personal, 
                                 educational purposes. This is the grant of a license, not a transfer of title, and under this license you may not:
                             </p>
                             <ul className="list-disc pl-6 text-gray-700 space-y-2">
@@ -114,7 +114,7 @@ const TermsOfService = () => {
                         <section>
                             <h2 className="text-2xl font-semibold text-gray-900 mb-4">8. Disclaimer</h2>
                             <p className="text-gray-700">
-                                The materials on the Classroom Assignment Portal are provided on an 'as is' basis. 
+                                The materials on the Gradely are provided on an 'as is' basis. 
                                 We make no warranties, expressed or implied, and hereby disclaim and negate all other 
                                 warranties including without limitation, implied warranties or conditions of merchantability, 
                                 fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
@@ -128,9 +128,9 @@ const TermsOfService = () => {
                             </p>
                             <div className="bg-gray-50 p-4 rounded-lg mt-4">
                                 <p className="text-gray-700">
-                                    Email: legal@classroomportal.com<br />
-                                    Address: [Your Company Address]<br />
-                                    Phone: [Your Phone Number]
+                                    Email: support@gradely.site<br />
+                                    Address: 304, Diamond Plaza Hiran Magri Sector - 5 Udaipur, Rajasthan<br />
+                                    Phone: +91 9664049426
                                 </p>
                             </div>
                         </section>
@@ -145,7 +145,7 @@ const TermsOfService = () => {
                         <div className="flex items-center justify-center mb-4">
                             <BookOpen className="h-8 w-8 text-indigo-600" />
                             <span className="ml-2 text-xl font-semibold text-gray-900">
-                                Classroom Assignment Portal
+                                Gradely
                             </span>
                         </div>
                         <div className="flex justify-center space-x-6 text-sm">
@@ -155,7 +155,7 @@ const TermsOfService = () => {
                             <a href="/help-center" className="text-gray-600 hover:text-indigo-600">Help Center</a>
                         </div>
                         <p className="text-center text-gray-500 text-sm mt-4">
-                            © 2025 Classroom Assignment Portal. All rights reserved.
+                            © 2025 Gradely. All rights reserved.
                         </p>
                     </div>
                 </div>

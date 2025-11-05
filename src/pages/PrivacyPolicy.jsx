@@ -10,7 +10,7 @@ const PrivacyPolicy = () => {
                         <div className="flex items-center">
                             <BookOpen className="h-8 w-8 text-indigo-600" />
                             <a href="/" className="ml-2 text-xl font-semibold text-gray-900">
-                                Classroom Assignment Portal
+                                Gradely
                             </a>
                         </div>
                         <div className="flex items-center space-x-4">
@@ -105,9 +105,9 @@ const PrivacyPolicy = () => {
                             </p>
                             <div className="bg-gray-50 p-4 rounded-lg mt-4">
                                 <p className="text-gray-700">
-                                    Email: privacy@classroomportal.com<br />
-                                    Address: [Your Company Address]<br />
-                                    Phone: [Your Phone Number]
+                                    Email: support@gradely.site<br />
+                                    Address: 304, Diamond Plaza Hiran Magri Sector - 5 Udaipur, Rajasthan<br />
+                                    Phone: +91 9664049426
                                 </p>
                             </div>
                         </section>
@@ -122,7 +122,7 @@ const PrivacyPolicy = () => {
                         <div className="flex items-center justify-center mb-4">
                             <BookOpen className="h-8 w-8 text-indigo-600" />
                             <span className="ml-2 text-xl font-semibold text-gray-900">
-                                Classroom Assignment Portal
+                                Gradely
                             </span>
                         </div>
                         <div className="flex justify-center space-x-6 text-sm">
@@ -132,7 +132,7 @@ const PrivacyPolicy = () => {
                             <a href="/help-center" className="text-gray-600 hover:text-indigo-600">Help Center</a>
                         </div>
                         <p className="text-center text-gray-500 text-sm mt-4">
-                            © 2025 Classroom Assignment Portal. All rights reserved.
+                            © 2025 Gradely. All rights reserved.
                         </p>
                     </div>
                 </div>
